@@ -2,6 +2,15 @@
    GitHub Pages, or shared as a static folder. The shell below is a browser-safe simulator,
    not a remote command runner. */
 
+/* Apply layout values from data attributes via the CSSOM. Inline style="" attributes are
+   avoided so the production Content-Security-Policy can forbid 'unsafe-inline' styles. */
+document.querySelectorAll('[data-width]').forEach((element) => {
+  element.style.width = element.dataset.width;
+});
+document.querySelectorAll('[data-height]').forEach((element) => {
+  element.style.height = element.dataset.height;
+});
+
 const iconPaths = {
   terminal: '<path d="m5 7 4 4-4 4"/><path d="M11.5 15H16"/>',
   layout: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/>',

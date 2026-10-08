@@ -1,6 +1,14 @@
 import { defineConfig } from 'vite';
 
+// Dev and preview servers bind to 0.0.0.0 so they are reachable from a container or
+// preview proxy. Production hosting is handled by Vercel (see vercel.json).
 export default defineConfig({
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    sourcemap: false,
+    target: 'es2020'
+  },
   server: {
     host: '0.0.0.0',
     allowedHosts: true
