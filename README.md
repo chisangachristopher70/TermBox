@@ -56,29 +56,62 @@ No install step is required for the static prototype:
 python3 -m http.server 4173 --bind 0.0.0.0
 ```
 
-Open `http://localhost:4173` in a browser. If Node.js is available, a Vite script is also provided:
+Open `http://localhost:4173` in a browser. With Node.js 20+, the Vite scripts are:
 
 ```bash
-npm install
-npm run dev
+npm ci
+npm run dev       # development server
+npm run build     # production build into dist/
+npm run preview   # serve dist/ locally
 ```
 
-## Deployment options
+## Deployment: Vercel
 
-### Vercel (recommended for the web app)
+TermBox is deployed to Vercel as a Vite static site with one optional serverless function. `vercel.json` holds the full configuration, so no dashboard overrides are needed.
 
-1. Import the GitHub repository into Vercel.
-2. Select **Other** / static site, or use the included `npm run build` script if a build command is requested.
-3. Use `.` as the output directory. The app is already deployable from the repository root.
-4. Every push to the connected branch can create a preview deployment.
+| Setting | Value |
+| --- | --- |
+| Framework | Vite (detected from `vercel.json`) |
+| Install command | `npm ci` |
+| Build command | `npm run build` |
+| Output directory | `dist` |
+| Node.js | 20 or newer (`engines` in `package.json`) |
 
-The included `vercel.json` keeps history-style routes working if more views are added later.
+### One-time setup
 
-### GitHub Pages
+1. Push the branch to GitHub.
+2. In Vercel, choose **Add New → Project** and import `chisangachristopher70/TermBox`.
+3. Keep the detected settings from the table above and click **Deploy**.
+4. Every push to a branch creates a Preview deployment; merging to `main` updates Production.
 
-1. Push the repository to GitHub.
-2. In **Settings → Pages**, choose **GitHub Actions** or deploy the repository root with a static-pages workflow.
-3. Use the repository root as the published directory. No server-side runtime is required for the current prototype.
+Or deploy from the terminal:
+
+```bash
+npm i -g vercel
+vercel login
+vercel          # preview deployment
+vercel --prod   # production deployment
+```
+
+### What the Vercel config provides
+
+- **Security headers** on every route: a strict Content-Security-Policy (`script-src 'self'`, `style-src 'self'`, no inline scripts or styles), `X-Frame-Options: DENY`, `nosniff`, a referrer policy, a permissions policy, and HSTS.
+- **Caching:** hashed files under `/assets/` are cached for one year as immutable; HTML is always revalidated.
+- **Routing:** clean URLs, and unknown paths fall back to `index.html`. Vercel serves existing files and `api/` functions before applying this fallback, so `/api/*` requests still reach the functions.
+- **Serverless API:** `api/health.js` is served at `/api/health` (GET returns `{ status, service, timestamp }`). It is the entry point for the future workspace API and runs no commands.
+
+### Verify a deployment
+
+```bash
+curl -I https://<your-deployment>.vercel.app/            # 200, security headers present
+curl https://<your-deployment>.vercel.app/api/health     # {"status":"ok",...}
+```
+
+Use `vercel dev` to run the function and static site locally with the same routing as production.
+
+### GitHub Pages (alternative)
+
+GitHub Pages can host the built `dist/` folder as a static site. It does not run `api/` functions and does not apply the `vercel.json` headers, so Vercel remains the recommended host.
 
 ### Google Drive
 
@@ -88,11 +121,14 @@ Google Drive is useful for sharing a zipped snapshot or design handoff, but it i
 
 ```text
 .
+├── api/
+│   └── health.js    # Vercel serverless function: GET /api/health
 ├── index.html       # semantic app shell and view markup
 ├── styles.css       # responsive dark UI system
 ├── app.js           # safe terminal simulator and view interactions
-├── package.json     # optional Vite commands
-└── vercel.json      # static deployment fallback
+├── package.json     # Vite scripts; Node.js 20+
+├── vite.config.js   # build output (dist/) and dev/preview servers
+└── vercel.json      # build, routing, security headers, caching
 ```
 
 ## Security boundary
