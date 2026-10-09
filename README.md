@@ -4,6 +4,19 @@ TermBox is a focused, browser-native workspace inspired by the workflow of Termu
 
 This repository is a dependency-free static prototype. It can be opened directly from `index.html`, served by any static server, or deployed to Vercel/GitHub Pages. The command runner is intentionally a safe browser simulator; it does not execute arbitrary commands on a server.
 
+## Documentation map
+
+| Document | What it is |
+| --- | --- |
+| **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | **The production architecture — source of truth.** How TermBox becomes a real Kali-in-the-browser platform: hybrid runtime (in-browser WASM Linux + Firecracker/gVisor sandboxes), Terminal Stream Protocol, control plane, data model, security/threat model, reliability, cost, and the phased roadmap. |
+| **[docs/ENGINEERING_GUIDELINES.md](docs/ENGINEERING_GUIDELINES.md)** | The engineering operating system: how to think, design, build, verify, operate, and secure — including the AI agent execution protocol that makes any agent working on this repo effective. |
+| **[docs/adr/](docs/adr/README.md)** | Architecture Decision Records: the settled calls (runtime substrate, terminal protocol, engine, persistence, offensive-workload safety) with the evidence that would reverse each one. |
+| **[AGENTS.md](AGENTS.md)** | Operating manual and invariants for AI agents (and humans) contributing to this repository. |
+
+The product plan below describes the shipped prototype and the original phase
+sketch. **When it disagrees with [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md),
+the architecture document wins** — and a PR fixing the disagreement is welcome.
+
 ## Product plan
 
 ### Product principles
@@ -23,30 +36,35 @@ This repository is a dependency-free static prototype. It can be opened directly
 - Toast feedback for actions that will later connect to real services.
 - Accessible controls, focus states, responsive layouts, reduced-motion support, and no arbitrary HTML interpolation of terminal input.
 
-### Suggested production roadmap
+### Production roadmap (summary)
 
-#### Phase 1 — foundation
+The full roadmap with exit gates, acceptance criteria, and latency budgets lives
+in **[docs/ARCHITECTURE.md §15](docs/ARCHITECTURE.md)**. Summary:
 
-- Replace the simulated command adapter with a small authenticated API.
-- Put every shell session in an isolated, short-lived container or WebAssembly runtime.
-- Add a session store for workspace metadata, command history, and open tabs.
-- Add rate limits, idle timeouts, output-size limits, and audit logging.
+#### Phase 0 — shipped ✅ (this repository)
 
-#### Phase 2 — useful workspace tools
+- Static prototype: honest terminal simulator, GUI workspace, palette, `/api/health`, strict CSP, Vercel pipeline.
 
-- Connect a file tree and editor to a workspace filesystem.
-- Add terminal resize/PTY support over WebSockets.
-- Add GitHub OAuth and repository import/export.
-- Add package metadata and allow-list packages rather than arbitrary network installs.
-- Persist settings and recent work with a small database.
+#### Phase 1 — the real terminal
 
-#### Phase 3 — collaboration and release
+- xterm.js shell replacing the simulator; Terminal Stream Protocol (TSP v1) with
+  reconnect/resume and flow control; Terminal Gateway.
+- **Instant Plane**: in-browser Linux (v86/WASM) with a Kali-mini rootfs — free,
+  offline-capable, boots to a prompt in the tab.
+- GitHub OAuth, session store, rate limits, idle timeouts, size/perf budgets in CI.
 
-- Shareable read-only session links.
-- User-owned environment variables and secrets stored outside source control.
-- Automated tests for command parsing, permissions, and session lifecycle.
-- Security review, cost controls, observability, backups, and disaster recovery.
-- PWA install support and optional offline GUI shell.
+#### Phase 2 — the Power Plane (real Kali)
+
+- Isolated server-side Kali sandboxes behind a `RuntimeDriver` contract: gVisor
+  containers (MVP) → Firecracker microVMs with snapshot/suspend (production).
+- Workspace volumes + snapshots, file APIs, editor, session recordings, egress
+  proxy (package mirrors), quotas, metering, audit pipeline.
+
+#### Phase 3 — cyber range & collaboration
+
+- Lab network with intentionally vulnerable targets; verified-tier scoped egress.
+- Teams/orgs, shareable sessions, package catalog, PWA offline shell, billing,
+  responsible-use program, disaster-recovery game days.
 
 ## Run locally
 
@@ -123,6 +141,11 @@ Google Drive is useful for sharing a zipped snapshot or design handoff, but it i
 .
 ├── api/
 │   └── health.js    # Vercel serverless function: GET /api/health
+├── docs/
+│   ├── ARCHITECTURE.md          # production system design (source of truth)
+│   ├── ENGINEERING_GUIDELINES.md# engineering operating system
+│   └── adr/                     # architecture decision records
+├── AGENTS.md        # operating manual for AI agents and contributors
 ├── index.html       # semantic app shell and view markup
 ├── styles.css       # responsive dark UI system
 ├── app.js           # safe terminal simulator and view interactions
