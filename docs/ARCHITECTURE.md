@@ -504,6 +504,9 @@ Error budgets gate feature velocity (Guidelines §5.1).
   recorder (last N state transitions + resource stats) answering Q12 in minutes.
 - **Product analytics** (privacy-preserving): time-to-first-prompt, attach
   success, feature usage — the same numbers that define Q2–Q5.
+- **Shell telemetry (shipped):** the static site uses Vercel Web Analytics and
+  Speed Insights in production builds only, same-origin under the strict CSP
+  (ADR 0008). Custom product events are not yet implemented.
 - **Cost telemetry** per session, aggregated to `usage_records` — cost is a
   dashboard, not an invoice surprise.
 

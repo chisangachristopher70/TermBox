@@ -58,3 +58,4 @@ Spikes, benchmarks, prior art, links. Claims without evidence do not belong here
 | 0005 | [Offensive-workload trust & safety](0005-offensive-workload-safety.md) | Accepted | 2026-10-09 |
 | 0006 | [Go for gateway/scheduler/node-agent](0006-gateway-language.md) | Proposed | 2026-10-09 |
 | 0007 | [TSP v1 wire framing and multiplexing](0007-tsp-v1-wire-details.md) | Proposed | 2026-10-10 |
+| 0008 | [Vercel Web Analytics and Speed Insights](0008-vercel-analytics-and-speed-insights.md) | Accepted | 2026-10-10 |

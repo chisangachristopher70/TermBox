@@ -119,6 +119,23 @@ vercel          # preview deployment
 vercel --prod   # production deployment
 ```
 
+### Analytics and performance monitoring
+
+The production site at **https://term-box.vercel.app** reports to two Vercel products, both enabled in `monitoring.js`:
+
+- **Web Analytics** — page views and visitor trends for the shell.
+- **Speed Insights** — real-user Core Web Vitals (LCP, INP, CLS, and others) per page, the field data behind the performance work.
+
+Both scripts load from the same origin (`/_vercel/...`), so the strict CSP is unchanged. Injection happens only in production builds (`import.meta.env.PROD`). `npm run dev` sends nothing.
+
+One-time dashboard setup (required for data to appear):
+
+1. Open the `term-box` project in Vercel → **Analytics** tab → **Enable**.
+2. Open the same project → **Speed Insights** tab → **Enable**.
+3. Redeploy to production (`vercel --prod`, or merge to `main`).
+
+What is collected: page URL, referrer, device and browser class, timing metrics, and the coarse location Vercel derives on its side. Check Vercel's privacy policy for the exact fields. TermBox sends no custom events, so no command text, file names, or terminal output leave the browser. See ADR 0008.
+
 ### What the Vercel config provides
 
 - **Security headers** on every route: a strict Content-Security-Policy (`script-src 'self'`, `style-src 'self'`, no inline scripts or styles), `X-Frame-Options: DENY`, `nosniff`, a referrer policy, a permissions policy, and HSTS.
@@ -131,6 +148,8 @@ vercel --prod   # production deployment
 ```bash
 curl -I https://<your-deployment>.vercel.app/            # 200, security headers present
 curl https://<your-deployment>.vercel.app/api/health     # {"status":"ok",...}
+curl -I https://term-box.vercel.app/_vercel/insights/script.js        # 200 once Web Analytics is enabled
+curl -I https://term-box.vercel.app/_vercel/speed-insights/script.js  # 200 once Speed Insights is enabled
 ```
 
 Use `vercel dev` to run the function and static site locally with the same routing as production.
@@ -159,6 +178,7 @@ Google Drive is useful for sharing a zipped snapshot or design handoff, but it i
 ├── index.html       # semantic app shell and view markup
 ├── styles.css       # responsive dark UI system
 ├── app.js           # safe command simulator and view interactions
+├── monitoring.js    # production-only Vercel Web Analytics and Speed Insights
 ├── simulator-filesystem.js # fixed in-memory sample tree; no host file access
 ├── terminal-view.js # lazy-loaded xterm.js terminal input/display
 ├── terminal-line.js # line editing, simulator completion, and narrow viewport
