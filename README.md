@@ -1,8 +1,8 @@
 # TermBox
 
-TermBox is a focused, browser-native workspace inspired by the workflow of Termux: start in a terminal, run familiar commands, and switch into a visual GUI workspace when a command-line view is not the best tool.
+TermBox is a focused, browser-native terminal experience inspired by the workflow of Termux, with a visual workspace for files, tools, and sample status.
 
-This repository is a static web prototype built with Vite. The terminal view uses a locally bundled xterm.js renderer, but its command adapter is still a safe browser simulator: it does not execute commands or connect to a remote shell. Run the source through Vite (`npm run dev`) or build it for a static host; opening the source `index.html` directly via `file://` is not supported.
+This repository is a static web prototype built with Vite. xterm.js owns the terminal display and keyboard input, including cursor editing, command history, simulator-specific completion, and touch-friendly keys. Commands are handled by a safe browser-side simulator: no operating-system process is launched, no files are read or changed, and no remote shell is connected. Run the source through Vite (`npm run dev`) or build it for a static host; opening the source `index.html` directly via `file://` is not supported.
 
 ## Documentation map
 
@@ -30,8 +30,9 @@ the architecture document wins** — and a PR fixing the disagreement is welcome
 ### MVP shipped in this prototype
 
 - Responsive TermBox shell with a mobile navigation bar.
-- Terminal mode rendered with xterm.js and local Fit/WebGL addons; the current command adapter simulates `help`, `ls`, `pwd`, `neofetch`, `git status`, `npm run build`, `npm run dev`, `pkg`, `echo`, `date`, `history`, and version commands. This is not a real shell.
-- Command history with Up/Down, Tab autocomplete, `Ctrl/⌘ + K` command palette, and `Ctrl + L` clear.
+- xterm.js is the actual terminal input surface (not a separate command form), with cursor/home/end editing, word navigation/deletion, Up/Down history, safe simulator completion, bracketed-paste handling, and touch-friendly shortcut keys.
+- The command adapter simulates `help`, `ls`/`cd`/`pwd` against a fixed in-memory sample tree, `neofetch`, Git/package/runtime responses, `echo`, `date`, and `history`. It never reads or changes host files, installs packages, or launches scripts; this is not a real shell.
+- `Ctrl/⌘ + K` opens the command palette; `Ctrl + L` clears the terminal.
 - GUI mode with a launchpad, recent files, workspace status, resource health, and active session card.
 - Files, Packages, and Activity views accessible from the sidebar or palette.
 - Toast feedback for actions that will later connect to real services.
@@ -48,11 +49,11 @@ in **[docs/ARCHITECTURE.md §15](docs/ARCHITECTURE.md)**. Summary:
 
 #### Phase 1 — the real terminal
 
-**Current checkpoint:** this branch bundles xterm.js as the terminal renderer,
-with FitAddon and optional WebGL acceleration. Commands still go to the safe
-browser simulator; there is no PTY, TSP connection, or remote shell yet. A
-JavaScript TSP frame codec and tests now exist, alongside a proposed wire contract
-that still needs Gateway/maintainer conformance review.
+**Current checkpoint:** this branch bundles xterm.js as the editable terminal
+surface, with FitAddon and optional WebGL acceleration. Commands still go to the
+safe browser simulator; there is no PTY, TSP connection, or remote shell yet. A
+JavaScript TSP frame codec and tests also exist, alongside a proposed wire
+contract that still needs Gateway/maintainer conformance review.
 
 Remaining Phase 1 work:
 
@@ -158,7 +159,9 @@ Google Drive is useful for sharing a zipped snapshot or design handoff, but it i
 ├── index.html       # semantic app shell and view markup
 ├── styles.css       # responsive dark UI system
 ├── app.js           # safe command simulator and view interactions
-├── terminal-view.js # lazily loaded xterm.js terminal renderer
+├── simulator-filesystem.js # fixed in-memory sample tree; no host file access
+├── terminal-view.js # lazy-loaded xterm.js terminal input/display
+├── terminal-line.js # line editing, simulator completion, and narrow viewport
 ├── terminal-text.js # control-sequence-safe output text conversion
 ├── tests/           # Node built-in tests
 ├── package.json     # Vite/xterm.js dependencies; Node.js 20+

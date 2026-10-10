@@ -1,3 +1,5 @@
+import { SampleFileSystem } from './simulator-filesystem.js';
+
 /* TermBox bundles its dependencies locally so the production build can be deployed as a
    static site without remote scripts. The command adapter below is a browser-safe simulator,
    not a remote command runner. */
@@ -51,12 +53,10 @@ const viewLabels = {
 };
 let currentView = 'terminal';
 let commandHistory = [];
-let historyIndex = 0;
 let toastTimer;
+const sampleFilesystem = new SampleFileSystem();
 
 const terminalOutput = document.getElementById('terminalOutput');
-const commandInput = document.getElementById('commandInput');
-const commandForm = document.getElementById('commandForm');
 const breadcrumbCurrent = document.getElementById('breadcrumbCurrent');
 const toastRegion = document.querySelector('.toast-region');
 const paletteBackdrop = document.getElementById('paletteBackdrop');
@@ -64,15 +64,10 @@ const paletteInput = document.getElementById('paletteInput');
 const paletteResults = document.getElementById('paletteResults');
 let terminalView;
 let terminalViewReady;
-commandInput.disabled = true;
 
 function appendLine(text = '', type = 'output', className = '') {
   if (!terminalView) return;
   terminalView.writeLine(text, className || (type === 'command' ? 'command' : ''));
-}
-
-function appendCommand(command) {
-  terminalView?.writeCommand(command);
 }
 
 function appendSpacer() {
@@ -81,15 +76,11 @@ function appendSpacer() {
 
 function bootTerminal() {
   terminalView.clear();
-  appendLine('Welcome to TermBox, Jordan.', 'output', 'highlight');
-  appendLine('A browser-native Linux workspace for curious people.', 'output');
+  appendLine('TermBox local terminal simulator', 'output', 'highlight');
+  appendLine('Type `help` to browse the available demo commands.', 'output');
+  appendLine('No operating-system process or remote session is attached.', 'output', 'warn');
   appendSpacer();
-  appendCommand('neofetch');
-  appendLine('        ████████╗██████╗\n        ╚══██╔══╝██╔══██╗\n           ██║   ██████╔╝\n           ██║   ██╔══██╗\n           ██║   ██████╔╝\n           ╚═╝   ╚═════╝', 'output', 'success');
-  appendLine('  termbox@web  •  browser simulator  •  local session', 'output', 'highlight');
-  appendLine('  shell: bash 5.2  •  node: v20.11.1  •  cwd: ~/projects/termbox', 'output');
-  appendSpacer();
-  appendLine("Type 'help' to see what you can run.", 'output', 'success');
+  terminalView.showPrompt();
   terminalView.scrollToBottom();
 }
 
@@ -100,14 +91,51 @@ function clearTerminal() {
     });
     return;
   }
-  terminalView.clear();
-  appendLine('Terminal cleared.', 'output', 'success');
-  appendSpacer();
-  commandInput.focus();
+  terminalView.clearAndPrompt({ focus: currentView === 'terminal' });
 }
 
 function printLines(lines, type = 'output') {
   lines.forEach((line) => appendLine(line.text || line, line.type || type, line.className || ''));
+}
+
+function printSampleListing(command) {
+  const argumentsList = command.trim().split(/\s+/).slice(1);
+  const options = argumentsList.filter((argument) => argument.startsWith('-'));
+  const target = argumentsList.find((argument) => !argument.startsWith('-')) || '.';
+  const listing = sampleFilesystem.list(target);
+
+  if (!listing) {
+    appendLine(`ls: ${target}: no such path in the sample workspace`, 'output', 'warn');
+    return;
+  }
+
+  appendLine(`sample listing for ${sampleFilesystem.promptPath(listing.path)} — no host filesystem is read`, 'output', 'warn');
+  const showHidden = options.some((option) => option.slice(1).includes('a'));
+  const entries = listing.entries.filter((entry) => showHidden || !entry.name.startsWith('.'));
+  const longFormat = options.some((option) => option.slice(1).includes('l'));
+  if (longFormat) {
+    entries.forEach((entry) => {
+      const mode = entry.type === 'directory' ? 'drwxr-xr-x' : '-rw-r--r--';
+      appendLine(`${mode}  demo  demo  ${entry.name}${entry.type === 'directory' ? '/' : ''}`, 'output');
+    });
+  } else {
+    appendLine(entries.map((entry) => `${entry.name}${entry.type === 'directory' ? '/' : ''}`).join('  ') || '(empty directory)', 'output', 'highlight');
+  }
+}
+
+function changeSampleDirectory(command) {
+  let target = command.trim().slice(2).trim();
+  if (!target) target = '~';
+  if ((target.startsWith('"') && target.endsWith('"')) || (target.startsWith("'") && target.endsWith("'"))) {
+    target = target.slice(1, -1);
+  }
+
+  const result = sampleFilesystem.changeDirectory(target);
+  if (!result.ok) {
+    appendLine(`cd: ${target}: no such directory in the sample workspace`, 'output', 'warn');
+    return false;
+  }
+  return true;
 }
 
 function commandResponse(rawCommand) {
@@ -116,19 +144,17 @@ function commandResponse(rawCommand) {
   if (!command) return;
 
   if (lower === 'clear' || lower === 'cls') {
-    clearTerminal();
+    terminalView?.clear();
     return;
   }
-
-  appendCommand(command);
-  appendSpacer();
 
   if (lower === 'help' || lower === 'termbox --help') {
     printLines([
       { text: 'TermBox commands', className: 'highlight' },
       '  help                 show this list',
-      '  ls [-la]             list workspace files',
-      '  pwd                  print current directory',
+      '  ls [-la]             list sample workspace files',
+      '  cd <path>            change sample directory',
+      '  pwd                  print current sample directory',
       '  neofetch             show workspace information',
       '  gui                  switch to GUI mode',
       '  clear                clear the terminal',
@@ -137,87 +163,48 @@ function commandResponse(rawCommand) {
       '  echo <text>          print a message',
       '  date                 print the current date'
     ]);
+  } else if (lower === 'cd' || lower.startsWith('cd ')) {
+    changeSampleDirectory(command);
+    return;
   } else if (lower === 'pwd') {
-    appendLine('/home/termbox/projects/termbox', 'output', 'highlight');
-  } else if (lower === 'whoami') {
-    appendLine('jordan', 'output', 'highlight');
-  } else if (lower === 'ls' || lower === 'ls -la' || lower === 'ls -al') {
     printLines([
-      { text: 'total 32', className: 'highlight' },
-      'drwxr-xr-x  5 jordan  staff  160  Oct 08 15:56  .',
-      'drwxr-xr-x  4 jordan  staff  128  Oct 08 15:40  ..',
-      'drwxr-xr-x  8 jordan  staff  256  Oct 08 15:56  .git',
-      '-rw-r--r--  1 jordan  staff  8.4K Oct 08 15:55  app.js',
-      '-rw-r--r--  1 jordan  staff 14.2K Oct 08 15:50  styles.css',
-      '-rw-r--r--  1 jordan  staff  3.1K Oct 08 15:41  README.md'
+      { text: 'sample path — no host filesystem is attached', className: 'warn' },
+      sampleFilesystem.cwd
     ]);
+  } else if (lower === 'whoami') {
+    appendLine('demo', 'output', 'highlight');
+  } else if (lower === 'ls' || lower.startsWith('ls ')) {
+    printSampleListing(command);
   } else if (lower === 'neofetch') {
     printLines([
-      { text: '  TermBox web workspace', className: 'highlight' },
+      { text: '  TermBox local preview', className: 'highlight' },
       '  ─────────────────────',
-      '  OS       TermBox browser simulator',
-      '  Host     local browser session',
-      '  Kernel   simulated runtime',
-      '  Shell    bash 5.2',
-      '  Memory   384 MB / 1 GB'
+      '  OS       not attached',
+      '  Host     browser tab',
+      '  Kernel   unavailable',
+      '  Runtime  command simulator'
     ]);
   } else if (lower === 'date') {
     appendLine(new Date().toString(), 'output', 'highlight');
-  } else if (lower === 'npm -v' || lower === 'npm --version') {
-    appendLine('10.2.4', 'output', 'highlight');
-  } else if (lower === 'node -v' || lower === 'node --version') {
-    appendLine('v20.11.1', 'output', 'highlight');
-  } else if (lower === 'python --version' || lower === 'python3 --version') {
-    appendLine('Python 3.12.2', 'output', 'highlight');
+  } else if (lower === 'npm -v' || lower === 'npm --version' || lower === 'node -v' || lower === 'node --version' || lower === 'python --version' || lower === 'python3 --version') {
+    appendLine('No language runtime is attached to this local simulator.', 'output', 'warn');
   } else if (lower === 'git status') {
     printLines([
-      { text: 'On branch main', className: 'highlight' },
-      'Your branch is up to date with origin/main.',
-      '',
-      'Changes not staged for commit:',
-      '  modified:   app.js',
-      '  modified:   styles.css',
-      '',
-      { text: 'nothing added to commit yet', className: 'success' }
+      { text: 'No Git working tree is attached.', className: 'warn' },
+      'This preview does not inspect the repository on disk.'
     ]);
   } else if (lower === 'git log' || lower === 'git log --oneline') {
+    appendLine('No Git repository is attached to this simulator.', 'output', 'warn');
+  } else if (lower === 'npm run dev' || lower === 'npm run build') {
     printLines([
-      'a4f18d2  Refine terminal command palette',
-      'c91b62a  Add GUI workspace launchpad',
-      '9e5407d  Create TermBox shell'
-    ]);
-  } else if (lower === 'npm run dev') {
-    printLines([
-      { text: '> termbox@0.1.0 dev', className: 'highlight' },
-      '> vite --host 0.0.0.0',
-      '',
-      { text: '  VITE v6.4.4  ready in 412 ms', className: 'success' },
-      '  ➜  Local:   http://localhost:5173/',
-      { text: '  ➜  press h + enter to show help', className: 'highlight' }
-    ]);
-  } else if (lower === 'npm run build') {
-    printLines([
-      { text: '> termbox@0.1.0 build', className: 'highlight' },
-      '> vite build',
-      'transforming modules...',
-      '✓ 14 modules transformed.',
-      { text: '✓ built in 4.2s', className: 'success' }
+      { text: `> ${command}`, className: 'highlight' },
+      'Simulation only: no script ran and no files or processes changed.'
     ]);
   } else if (lower === 'pkg update' || lower === 'apt update') {
-    printLines([
-      'Get:1 https://packages.termbox.dev stable InRelease',
-      'Reading package lists... Done',
-      { text: 'All packages are up to date.', className: 'success' }
-    ]);
+    appendLine('Simulation only: no package index was contacted.', 'output', 'warn');
   } else if (lower.startsWith('pkg install ') || lower.startsWith('apt install ')) {
     const packageName = command.split(/\s+/).slice(2).join(' ') || 'package';
-    printLines([
-      `Reading package lists... Done`,
-      `Building dependency tree... Done`,
-      `Selecting previously unselected package ${packageName}.`,
-      { text: `Setting up ${packageName}...`, className: 'highlight' },
-      { text: `✓ ${packageName} is ready in your workspace.`, className: 'success' }
-    ]);
+    appendLine(`Simulation only: ${packageName} was not downloaded or installed.`, 'output', 'warn');
   } else if (lower === 'exit') {
     appendLine('This simulator has no shell process to exit.', 'output', 'warn');
   } else if (lower === 'gui' || lower === 'termbox gui') {
@@ -231,12 +218,21 @@ function commandResponse(rawCommand) {
     if (!commandHistory.length) appendLine('No commands in history.', 'output');
     commandHistory.forEach((item, index) => appendLine(`${String(index + 1).padStart(3, ' ')}  ${item}`, 'output'));
   } else {
-    appendLine(`bash: ${command.split(/\s+/)[0]}: command not found`, 'output', 'warn');
+    appendLine(`termbox: ${command.split(/\s+/)[0]}: command not found in this simulator`, 'output', 'warn');
     appendLine("Type 'help' for available TermBox commands.", 'output');
   }
 
   appendSpacer();
   terminalView?.scrollToBottom();
+}
+
+function handleTerminalCommand(rawCommand) {
+  const command = rawCommand.trim();
+  if (!command) return;
+  commandHistory = commandHistory.filter((item) => item !== command);
+  commandHistory.push(command);
+  if (commandHistory.length > 200) commandHistory.shift();
+  commandResponse(command);
 }
 
 function runCommand(rawCommand) {
@@ -246,16 +242,12 @@ function runCommand(rawCommand) {
     });
     return;
   }
-  const command = rawCommand.trim();
+  const command = String(rawCommand).trim();
   if (!command) {
-    commandInput.focus();
+    terminalView.focus();
     return;
   }
-  commandHistory = commandHistory.filter((item) => item !== command);
-  commandHistory.push(command);
-  historyIndex = commandHistory.length;
-  commandResponse(command);
-  commandInput.value = '';
+  terminalView.executeCommand(command);
 }
 
 function setView(view) {
@@ -271,8 +263,9 @@ function setView(view) {
   document.title = `${view === 'terminal' ? 'Terminal' : view === 'gui' ? 'GUI workspace' : view[0].toUpperCase() + view.slice(1)} — TermBox`;
   if (view === 'terminal') {
     setTimeout(() => {
+      if (currentView !== 'terminal') return;
       terminalView?.fit();
-      if (!commandInput.disabled) commandInput.focus();
+      terminalView?.focus();
     }, 30);
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -301,7 +294,7 @@ function openPalette() {
 
 function closePalette() {
   paletteBackdrop.classList.add('hidden');
-  if (currentView === 'terminal') commandInput.focus();
+  if (currentView === 'terminal') terminalView?.focus();
 }
 
 function filterPalette(query) {
@@ -320,32 +313,6 @@ function paletteSelect(action) {
   else setView(action);
   closePalette();
 }
-
-commandForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-  runCommand(commandInput.value);
-});
-
-commandInput.addEventListener('keydown', (event) => {
-  if (event.key === 'ArrowUp') {
-    event.preventDefault();
-    if (!commandHistory.length) return;
-    historyIndex = Math.max(0, historyIndex - 1);
-    commandInput.value = commandHistory[historyIndex] || '';
-  } else if (event.key === 'ArrowDown') {
-    event.preventDefault();
-    historyIndex = Math.min(commandHistory.length, historyIndex + 1);
-    commandInput.value = commandHistory[historyIndex] || '';
-  } else if (event.key === 'Tab') {
-    event.preventDefault();
-    const suggestions = ['help', 'ls -la', 'neofetch', 'gui', 'npm run dev', 'npm run build', 'pkg update'];
-    const match = suggestions.find((suggestion) => suggestion.startsWith(commandInput.value.toLowerCase()));
-    if (match) commandInput.value = match;
-  } else if (event.key.toLowerCase() === 'l' && event.ctrlKey) {
-    event.preventDefault();
-    clearTerminal();
-  }
-});
 
 document.addEventListener('keydown', (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
@@ -367,6 +334,10 @@ document.querySelectorAll('[data-mode]').forEach((button) => {
 
 document.querySelectorAll('[data-nav]').forEach((button) => {
   button.addEventListener('click', () => setView(button.dataset.nav));
+});
+
+document.querySelectorAll('[data-terminal-key]').forEach((button) => {
+  button.addEventListener('click', () => terminalView?.handleVirtualKey(button.dataset.terminalKey));
 });
 
 document.querySelectorAll('[data-command]').forEach((button) => {
@@ -399,15 +370,17 @@ document.querySelectorAll('[data-action]').forEach((button) => {
     const action = button.dataset.action;
     if (action === 'palette') openPalette();
     else if (action === 'notify') showToast('You are all caught up.', 'bell');
-    else if (action === 'split') showToast('Split terminal is available in the next session.', 'split');
-    else if (action === 'terminal-menu' || action === 'session-menu') showToast('Session options saved for later.', 'more');
+    else if (action === 'split') showToast('Split terminals are not attached to this simulator.', 'split');
+    else if (action === 'terminal-menu' || action === 'session-menu') showToast('Session options are a visual placeholder in this preview.', 'more');
     else if (action === 'customize') showToast('Launchpad customization is coming soon.', 'layout');
     else if (action === 'upgrade') showToast('Your free workspace is already active.', 'check');
     else if (action === 'upload') showToast('Import dialog is ready for a connected repo.', 'upload');
     else if (action === 'new-file') showToast('New file creation is ready in Code Studio.', 'plus');
     else if (action === 'connect') showToast('Connect a GitHub repository to sync this workspace.', 'git');
-    else if (action === 'clear-activity') showToast('Activity log cleared for this session.', 'trash');
-    else if (action === 'docs') showToast('Documentation will open in a new tab.', 'book');
+    else if (action === 'clear-activity') {
+      document.querySelectorAll('.full-activity .timeline-item').forEach((item) => item.remove());
+      showToast('Sample activity removed from this view.', 'trash');
+    } else if (action === 'docs') showToast('Documentation will open in a new tab.', 'book');
     else if (action === 'feedback') showToast('Thanks — feedback channel is ready.', 'bell');
     else if (action === 'status') showToast('This preview has no live system status feed.', 'pulse');
   });
@@ -417,11 +390,11 @@ document.querySelectorAll('.terminal-tab').forEach((tab) => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.terminal-tab').forEach((item) => item.classList.remove('active'));
     tab.classList.add('active');
-    showToast(`${tab.textContent.replace('×', '').trim()} session selected.`, 'terminal');
+    showToast('These sample tabs share one local simulator session.', 'terminal');
   });
 });
 
-document.querySelector('.new-tab')?.addEventListener('click', () => showToast('New session created in the next workspace.', 'plus'));
+document.querySelector('.new-tab')?.addEventListener('click', () => showToast('Additional terminal sessions are not connected in this preview.', 'plus'));
 
 document.querySelector('.workspace-picker')?.addEventListener('click', () => showToast('Workspace switcher is ready for more projects.', 'layout'));
 
@@ -465,17 +438,23 @@ document.querySelector('.package-search input')?.addEventListener('input', (even
 
 terminalViewReady = import('./terminal-view.js')
   .then(({ TerminalView }) => {
-    terminalView = new TerminalView(terminalOutput);
+    terminalView = new TerminalView(terminalOutput, {
+      onCommand: handleTerminalCommand,
+      getHistory: () => commandHistory,
+      getPromptPath: () => sampleFilesystem.promptPath(),
+      onEndOfInput: () => {
+        appendLine('No shell process is attached to this simulator.', 'output', 'warn');
+        appendSpacer();
+      }
+    });
     terminalView.mount();
-    commandInput.disabled = false;
     bootTerminal();
-    if (currentView === 'terminal') commandInput.focus();
+    if (currentView === 'terminal') terminalView.focus();
     return true;
   })
   .catch((error) => {
     console.error('TermBox could not initialize the xterm.js terminal.', error);
     terminalView = undefined;
-    commandInput.disabled = true;
     const terminalReady = document.querySelector('.terminal-ready');
     if (terminalReady) terminalReady.textContent = 'unavailable';
     showToast('The terminal display could not start. Refresh to retry.', 'terminal');

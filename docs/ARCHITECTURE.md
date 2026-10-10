@@ -592,8 +592,10 @@ Static prototype: simulated terminal (honestly labeled), GUI views, palette,
 
 ### Phase 1 — the real terminal (≈ 6–8 weeks)
 - xterm.js shell replacing the simulator (same views, same look). **Current
-  checkpoint:** xterm.js is integrated as a local renderer, but commands still
-  use the safe browser simulator; no PTY or remote transport is connected.
+  checkpoint:** xterm.js owns the local terminal display and input surface, with
+  line editing/history and safe simulator completion. `ls`/`cd`/`pwd` use a fixed
+  in-memory sample tree only. Commands still use the browser simulator; no PTY or
+  remote transport is connected.
 - TSP v1 + Terminal Gateway (Go) + session replay ring; `WasmDriver` Instant
   Plane (v86 + kali-mini rootfs) behind `POST /api/sessions`.
 - Auth (GitHub OIDC), session store (Postgres), rate limits, idle timeouts.

@@ -32,10 +32,12 @@ is more secure, more observable, and easier for the next engineer to verify.
 ├── index.html             # static app shell (views: terminal, gui, files, packages, activity)
 ├── styles.css             # dark UI system (no inline styles anywhere — CSP)
 ├── app.js                 # simulated commands + view interactions
-├── terminal-view.js       # lazy-loaded xterm.js renderer; no shell connection
+├── simulator-filesystem.js # fixed in-memory sample tree; no host file access
+├── terminal-view.js       # lazy-loaded xterm.js input/display; no shell connection
+├── terminal-line.js       # simulator completion, editable line buffer, narrow viewport
 ├── terminal-text.js       # safe plain-text encoding for simulated terminal output
 ├── packages/protocol/tsp.js # proposed TSP v1 browser frame codec; no Gateway yet
-├── tests/                 # Node built-in tests for terminal text and TSP frames
+├── tests/                 # Node built-in tests for input, simulator tree, text, and TSP frames
 ├── api/health.js          # Vercel function: GET /api/health — runs NO commands
 ├── package.json           # Vite and xterm.js dependencies, Node >= 20
 ├── vite.config.js         # build to dist/, dev/preview on 0.0.0.0

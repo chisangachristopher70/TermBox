@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#07090d" />
-    <meta name="description" content="TermBox is a focused browser workspace inspired by Termux, with a terminal and a visual GUI mode." />
-    <title>TermBox — Linux in your browser</title>
+    <meta name="description" content="TermBox is a browser-native terminal experience with familiar editing and history in a safe local command simulator." />
+    <title>TermBox — Local terminal simulator</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -68,7 +68,7 @@
         </div>
         <div class="sidebar-profile">
           <div class="avatar">JD</div>
-          <div><strong>Jordan Davis</strong><small>Free workspace</small></div>
+          <div><strong>Demo user</strong><small>Browser session</small></div>
           <button class="more-button" type="button" aria-label="Profile menu">•••</button>
         </div>
       </aside>
@@ -89,9 +89,9 @@
         <div class="content-wrap">
           <section class="page-intro">
             <div>
-              <p class="eyebrow"><span class="eyebrow-line"></span>YOUR LINUX WORKSPACE</p>
-              <h1>Good evening, Jordan <span class="wave">✦</span></h1>
-              <p class="intro-copy">A quiet place to build, explore, and run your ideas.</p>
+              <p class="eyebrow"><span class="eyebrow-line"></span>LOCAL COMMAND SIMULATOR</p>
+              <h1>Terminal, in your browser <span class="wave">✦</span></h1>
+              <p class="intro-copy">Familiar terminal editing and history, with safe simulated commands—no OS shell or remote session.</p>
             </div>
             <div class="mode-control" aria-label="Workspace mode">
               <span class="mode-label">VIEW</span>
@@ -108,35 +108,42 @@
                 <div class="terminal-toolbar">
                   <div class="terminal-title">
                     <div class="traffic-lights" aria-hidden="true"><span></span><span></span><span></span></div>
-                    <div><strong>termbox <span class="muted-slash">/</span> simulator</strong><small><span class="status-dot"></span> local simulation</small></div>
+                    <div><strong>termbox <span class="muted-slash">/</span> local simulator</strong><small><span class="status-dot"></span> browser-only simulation</small></div>
                   </div>
                   <div class="terminal-toolbar-actions">
-                    <span class="runtime-badge"><span class="pulse-dot"></span> simulator</span>
+                    <span class="runtime-badge"><span class="pulse-dot"></span> demo only</span>
                     <button class="toolbar-icon" type="button" data-action="split" aria-label="Split terminal"><span data-icon="split"></span></button>
                     <button class="toolbar-icon" type="button" data-action="terminal-menu" aria-label="Terminal options"><span data-icon="more"></span></button>
                   </div>
                 </div>
-                <div class="terminal-tabs" role="tablist" aria-label="Terminal sessions">
-                  <button class="terminal-tab active" role="tab" type="button"><span class="tab-dot green"></span>main <span class="tab-close">×</span></button>
-                  <button class="terminal-tab" role="tab" type="button"><span class="tab-dot violet"></span>node <span class="tab-close">×</span></button>
+                <div class="terminal-tabs" role="tablist" aria-label="Sample terminal tabs">
+                  <button class="terminal-tab active" role="tab" type="button"><span class="tab-dot green"></span>demo <span class="tab-close">×</span></button>
+                  <button class="terminal-tab" role="tab" type="button"><span class="tab-dot violet"></span>preview <span class="tab-close">×</span></button>
                   <button class="new-tab" type="button" aria-label="New terminal tab">+</button>
                 </div>
-                <div class="terminal-body" id="terminalOutput" aria-live="polite"></div>
-                <form class="command-line" id="commandForm" autocomplete="off">
-                  <span class="prompt-symbol">›</span><span class="prompt-path">~/projects/termbox</span><span class="prompt-caret">$</span>
-                  <input id="commandInput" name="command" type="text" aria-label="Terminal command" spellcheck="false" placeholder="Type a command..." />
-                  <button class="run-command" type="submit" aria-label="Run command"><span data-icon="arrow-up"></span></button>
-                </form>
-                <div class="terminal-footer"><span><kbd>↑</kbd><kbd>↓</kbd> history</span><span><kbd>tab</kbd> autocomplete</span><span><kbd>ctrl</kbd> <kbd>l</kbd> clear</span><span class="terminal-ready"><span class="status-dot"></span>ready</span></div>
+                <div class="terminal-body" id="terminalOutput" role="region" aria-label="TermBox terminal output and input"></div>
+                <div class="terminal-shortcuts" aria-label="Touch-friendly terminal keys">
+                  <button type="button" data-terminal-key="tab" aria-label="Tab completion">Tab</button>
+                  <button type="button" data-terminal-key="enter" aria-label="Enter command">Enter</button>
+                  <button type="button" data-terminal-key="up" aria-label="Previous command">↑</button>
+                  <button type="button" data-terminal-key="down" aria-label="Next command">↓</button>
+                  <button type="button" data-terminal-key="ctrl-c" aria-label="Cancel input">Ctrl+C</button>
+                  <button type="button" data-terminal-key="ctrl-l" aria-label="Clear terminal">Ctrl+L</button>
+                  <button type="button" data-terminal-key="|" aria-label="Insert vertical bar">|</button>
+                  <button type="button" data-terminal-key="-" aria-label="Insert hyphen">-</button>
+                  <button type="button" data-terminal-key="/" aria-label="Insert slash">/</button>
+                  <button type="button" data-terminal-key="~" aria-label="Insert tilde">~</button>
+                </div>
+                <div class="terminal-footer"><span><kbd>↑</kbd><kbd>↓</kbd> history</span><span><kbd>tab</kbd> complete</span><span><kbd>ctrl</kbd> <kbd>l</kbd> clear</span><span class="terminal-ready"><span class="status-dot"></span>ready</span></div>
               </article>
 
               <aside class="terminal-rail">
                 <div class="rail-card quick-card surface-card">
                   <div class="card-heading"><div><p class="section-kicker">SHORTCUTS</p><h2>Quick actions</h2></div><span class="spark-icon">✦</span></div>
                   <div class="quick-list">
-                    <button class="quick-action" type="button" data-command="ls -la"><span class="quick-icon blue" data-icon="list"></span><span><strong>Browse files</strong><small>ls -la</small></span><span class="quick-arrow">↗</span></button>
-                    <button class="quick-action" type="button" data-command="npm run dev"><span class="quick-icon orange" data-icon="play"></span><span><strong>Start dev server</strong><small>npm run dev</small></span><span class="quick-arrow">↗</span></button>
-                    <button class="quick-action" type="button" data-command="pkg update"><span class="quick-icon purple" data-icon="package"></span><span><strong>Update packages</strong><small>pkg update</small></span><span class="quick-arrow">↗</span></button>
+                    <button class="quick-action" type="button" data-command="ls -la"><span class="quick-icon blue" data-icon="list"></span><span><strong>Browse sample files</strong><small>ls -la</small></span><span class="quick-arrow">↗</span></button>
+                    <button class="quick-action" type="button" data-command="npm run dev"><span class="quick-icon orange" data-icon="play"></span><span><strong>Preview dev command</strong><small>npm run dev</small></span><span class="quick-arrow">↗</span></button>
+                    <button class="quick-action" type="button" data-command="pkg update"><span class="quick-icon purple" data-icon="package"></span><span><strong>Preview package update</strong><small>pkg update</small></span><span class="quick-arrow">↗</span></button>
                   </div>
                 </div>
                 <div class="rail-card system-card surface-card">
@@ -150,10 +157,10 @@
             </div>
             <div class="terminal-lower-grid">
               <div class="recent-card surface-card">
-                <div class="card-heading"><div><p class="section-kicker">RECENT ACTIVITY</p><h2>Back in the flow</h2></div><button class="text-button" type="button" data-nav="activity">View all <span>→</span></button></div>
-                <div class="activity-row"><span class="activity-icon green-bg" data-icon="check"></span><span><strong>npm run build</strong><small>termbox · 2 minutes ago</small></span><span class="activity-status success">Passed</span></div>
-                <div class="activity-row"><span class="activity-icon blue-bg" data-icon="git"></span><span><strong>git pull origin main</strong><small>termbox · 18 minutes ago</small></span><span class="activity-status">Updated</span></div>
-                <div class="activity-row"><span class="activity-icon purple-bg" data-icon="package"></span><span><strong>pkg install ripgrep</strong><small>personal-dev · Yesterday</small></span><span class="activity-status muted">Installed</span></div>
+                <div class="card-heading"><div><p class="section-kicker">SAMPLE ACTIVITY</p><h2>Example commands</h2></div><button class="text-button" type="button" data-nav="activity">View all <span>→</span></button></div>
+                <div class="activity-row"><span class="activity-icon green-bg" data-icon="check"></span><span><strong>npm run build</strong><small>illustrative command</small></span><span class="activity-status success">Preview</span></div>
+                <div class="activity-row"><span class="activity-icon blue-bg" data-icon="git"></span><span><strong>git status</strong><small>illustrative command</small></span><span class="activity-status">Sample</span></div>
+                <div class="activity-row"><span class="activity-icon purple-bg" data-icon="package"></span><span><strong>pkg install ripgrep</strong><small>illustrative command</small></span><span class="activity-status muted">Demo</span></div>
               </div>
               <div class="tip-card surface-card"><span class="tip-orb">✦</span><p class="section-kicker">TERMINAL TIP</p><h2>Everything starts with a prompt.</h2><p>Use <kbd>Ctrl</kbd> + <kbd>K</kbd> to open the command palette from anywhere.</p></div>
             </div>
@@ -170,11 +177,11 @@
                 <div class="tool-grid">
                   <button class="tool-card surface-card" type="button" data-tool="editor"><span class="tool-icon coral" data-icon="code"></span><span><strong>Code Studio</strong><small>Write and preview code</small></span><span class="tool-open">↗</span></button>
                   <button class="tool-card surface-card" type="button" data-tool="files"><span class="tool-icon blue" data-icon="folder"></span><span><strong>File explorer</strong><small>Browse your workspace</small></span><span class="tool-open">↗</span></button>
-                  <button class="tool-card surface-card" type="button" data-tool="monitor"><span class="tool-icon green" data-icon="pulse"></span><span><strong>System monitor</strong><small>Watch resource usage</small></span><span class="tool-open">↗</span></button>
-                  <button class="tool-card surface-card" type="button" data-tool="packages"><span class="tool-icon purple" data-icon="package"></span><span><strong>Package manager</strong><small>Install and update tools</small></span><span class="tool-open">↗</span></button>
+                  <button class="tool-card surface-card" type="button" data-tool="monitor"><span class="tool-icon green" data-icon="pulse"></span><span><strong>System monitor</strong><small>Sample metrics only</small></span><span class="tool-open">↗</span></button>
+                  <button class="tool-card surface-card" type="button" data-tool="packages"><span class="tool-icon purple" data-icon="package"></span><span><strong>Package manager</strong><small>Preview simulated actions</small></span><span class="tool-open">↗</span></button>
                 </div>
                 <article class="workspace-files surface-card">
-                  <div class="card-heading"><div><p class="section-kicker">WORKSPACE</p><h2>Recent files</h2></div><button class="text-button" type="button" data-nav="files">Open explorer <span>→</span></button></div>
+                  <div class="card-heading"><div><p class="section-kicker">SAMPLE FILES</p><h2>Example file list</h2></div><button class="text-button" type="button" data-nav="files">Open explorer <span>→</span></button></div>
                   <div class="file-table-head"><span>NAME</span><span>UPDATED</span><span>SIZE</span></div>
                   <button class="file-row" type="button" data-file="app.js"><span class="file-name"><span class="file-type js">JS</span>app.js</span><span>Just now</span><span>8.4 KB</span></button>
                   <button class="file-row" type="button" data-file="styles.css"><span class="file-name"><span class="file-type css">#</span>styles.css</span><span>12 min ago</span><span>14.2 KB</span></button>
@@ -183,7 +190,7 @@
               </div>
               <aside class="gui-side-column">
                 <article class="live-card surface-card"><div class="card-heading"><div><p class="section-kicker">SAMPLE DATA</p><h2>Workspace status</h2></div><span class="live-label"><span></span>DEMO</span></div><div class="visualizer"><span data-height="32%"></span><span data-height="58%"></span><span data-height="42%"></span><span data-height="80%"></span><span data-height="52%"></span><span data-height="92%"></span><span data-height="44%"></span><span data-height="68%"></span><span data-height="35%"></span><span data-height="76%"></span><span data-height="48%"></span><span data-height="61%"></span></div><div class="status-track"><span><i class="status-dot"></i> Sample status only</span><strong>98%</strong></div></article>
-                <article class="gui-info-card surface-card"><div class="card-heading"><div><p class="section-kicker">SAMPLE SESSION</p><h2>main</h2></div><button class="toolbar-icon" type="button" data-action="session-menu" aria-label="Session options"><span data-icon="more"></span></button></div><div class="session-command"><span class="prompt-symbol">›</span><div><strong>npm run build</strong><small>Finished in 4.2s</small></div><span class="checkmark">✓</span></div><div class="session-detail"><span>Uptime</span><strong>02:14:08</strong></div><div class="session-detail"><span>Environment</span><strong>Node 20.11</strong></div><button class="outline-button" type="button" data-mode="terminal"><span data-icon="terminal"></span> Open terminal</button></article>
+                <article class="gui-info-card surface-card"><div class="card-heading"><div><p class="section-kicker">SAMPLE SESSION</p><h2>main</h2></div><button class="toolbar-icon" type="button" data-action="session-menu" aria-label="Session options"><span data-icon="more"></span></button></div><div class="session-command"><span class="prompt-symbol">›</span><div><strong>npm run build</strong><small>Example output only — not run</small></div><span class="checkmark">✓</span></div><div class="session-detail"><span>Uptime</span><strong>02:14:08</strong></div><div class="session-detail"><span>Environment</span><strong>Node 20.11</strong></div><button class="outline-button" type="button" data-mode="terminal"><span data-icon="terminal"></span> Open terminal</button></article>
                 <article class="upgrade-card"><span class="upgrade-icon">✦</span><div><p>Make more room</p><strong>Upgrade your workspace</strong><small>More storage, longer sessions.</small></div><button type="button" data-action="upgrade" aria-label="Upgrade">↗</button></article>
               </aside>
             </div>
@@ -204,12 +211,12 @@
 
           <section class="view-panel hidden" id="packagesView" aria-label="Packages view">
             <div class="page-heading-row"><div><p class="eyebrow"><span class="eyebrow-line"></span>PACKAGE MANAGER</p><h2>Tools for your terminal.</h2><p>Sample catalog only; installs do not change a real environment.</p></div><div class="package-search"><span data-icon="search"></span><input type="search" placeholder="Search packages" aria-label="Search packages" /></div></div>
-            <div class="package-grid"><article class="package-card surface-card"><div class="package-icon rg">rg</div><div><h3>ripgrep</h3><p>Fast recursive search</p></div><span class="installed-badge">Installed</span><button type="button" class="package-command" data-command="rg --help">$ rg --help</button></article><article class="package-card surface-card"><div class="package-icon py">Py</div><div><h3>python</h3><p>Python runtime 3.12</p></div><span class="installed-badge">Installed</span><button type="button" class="package-command" data-command="python --version">$ python --version</button></article><article class="package-card surface-card"><div class="package-icon no">JS</div><div><h3>nodejs</h3><p>JavaScript runtime 20</p></div><span class="installed-badge">Installed</span><button type="button" class="package-command" data-command="node --version">$ node --version</button></article><article class="package-card surface-card"><div class="package-icon gi">git</div><div><h3>git</h3><p>Version control system</p></div><span class="installed-badge">Installed</span><button type="button" class="package-command" data-command="git status">$ git status</button></article><article class="package-card surface-card"><div class="package-icon jq">jq</div><div><h3>jq</h3><p>JSON command-line processor</p></div><button type="button" class="install-button" data-command="pkg install jq">Install package <span>+</span></button></article><article class="package-card surface-card"><div class="package-icon cu">cu</div><div><h3>curl</h3><p>Transfer data with URLs</p></div><button type="button" class="install-button" data-command="pkg install curl">Install package <span>+</span></button></article></div>
+            <div class="package-grid"><article class="package-card surface-card"><div class="package-icon rg">rg</div><div><h3>ripgrep</h3><p>Fast recursive search</p></div><span class="installed-badge">Sample</span><button type="button" class="package-command" data-command="rg --help">$ rg --help</button></article><article class="package-card surface-card"><div class="package-icon py">Py</div><div><h3>python</h3><p>Python runtime 3.12</p></div><span class="installed-badge">Sample</span><button type="button" class="package-command" data-command="python --version">$ python --version</button></article><article class="package-card surface-card"><div class="package-icon no">JS</div><div><h3>nodejs</h3><p>JavaScript runtime 20</p></div><span class="installed-badge">Sample</span><button type="button" class="package-command" data-command="node --version">$ node --version</button></article><article class="package-card surface-card"><div class="package-icon gi">git</div><div><h3>git</h3><p>Version control system</p></div><span class="installed-badge">Sample</span><button type="button" class="package-command" data-command="git status">$ git status</button></article><article class="package-card surface-card"><div class="package-icon jq">jq</div><div><h3>jq</h3><p>JSON command-line processor</p></div><button type="button" class="install-button" data-command="pkg install jq">Preview install <span>+</span></button></article><article class="package-card surface-card"><div class="package-icon cu">cu</div><div><h3>curl</h3><p>Transfer data with URLs</p></div><button type="button" class="install-button" data-command="pkg install curl">Preview install <span>+</span></button></article></div>
           </section>
 
           <section class="view-panel hidden" id="activityView" aria-label="Activity view">
             <div class="page-heading-row"><div><p class="eyebrow"><span class="eyebrow-line"></span>ACTIVITY LOG</p><h2>Everything in one stream.</h2><p>Sample commands and workspace events; this is not a live audit log.</p></div><button class="outline-button" type="button" data-action="clear-activity"><span data-icon="trash"></span> Clear log</button></div>
-            <div class="full-activity surface-card"><div class="activity-filter"><button class="filter active" type="button">All activity</button><button class="filter" type="button">Commands</button><button class="filter" type="button">Workspace</button><span class="activity-date">Today</span></div><div class="timeline-item"><span class="timeline-dot green"></span><div><strong>npm run build</strong><p>Build completed successfully in 4.2s</p></div><time>2 min ago</time></div><div class="timeline-item"><span class="timeline-dot blue"></span><div><strong>File updated</strong><p><b>app.js</b> was saved to the termbox workspace</p></div><time>Just now</time></div><div class="timeline-item"><span class="timeline-dot purple"></span><div><strong>Package installed</strong><p>ripgrep is ready to use in the terminal</p></div><time>Yesterday</time></div><div class="timeline-item"><span class="timeline-dot orange"></span><div><strong>Session started</strong><p>New TermBox sandbox connected</p></div><time>Yesterday</time></div></div>
+            <div class="full-activity surface-card"><div class="activity-filter"><button class="filter active" type="button">All activity</button><button class="filter" type="button">Commands</button><button class="filter" type="button">Workspace</button><span class="activity-date">Examples</span></div><div class="timeline-item"><span class="timeline-dot green"></span><div><strong>npm run build preview</strong><p>Example output only; no build script was run.</p></div><time>Example</time></div><div class="timeline-item"><span class="timeline-dot blue"></span><div><strong>File update example</strong><p>Sample entry only; no file was saved.</p></div><time>Example</time></div><div class="timeline-item"><span class="timeline-dot purple"></span><div><strong>Package action preview</strong><p>Install commands are simulated; no package was installed.</p></div><time>Example</time></div><div class="timeline-item"><span class="timeline-dot orange"></span><div><strong>Local preview</strong><p>Browser-only simulator; no sandbox is connected.</p></div><time>Example</time></div></div>
           </section>
         </div>
 

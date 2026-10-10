@@ -220,15 +220,7 @@ h1 { margin-bottom: 9px; color: #edf3f6; font-size: clamp(25px, 3vw, 34px); line
 .terminal-body .xterm .xterm-viewport { scrollbar-color: #26303d transparent; }
 .terminal-body .xterm .xterm-viewport::-webkit-scrollbar { width: 7px; }
 .terminal-body .xterm .xterm-viewport::-webkit-scrollbar-thumb { border-radius: 5px; background: #26303d; }
-.command-line { display: flex; align-items: center; min-height: 53px; gap: 8px; padding: 0 20px; border-top: 1px solid rgba(148, 163, 184, 0.09); background: #0a0e13; font: 11px var(--mono); }
-.prompt-symbol { color: var(--green); font-size: 17px; line-height: 1; }
-.prompt-path { color: #6d8eb0; white-space: nowrap; }
-.prompt-caret { color: #657588; }
-.command-line input { min-width: 40px; flex: 1; border: 0; outline: 0; color: #e4edf0; background: transparent; caret-color: var(--green); font: 11px var(--mono); }
-.command-line input::placeholder { color: #455263; }
-.run-command { display: grid; place-items: center; width: 27px; height: 27px; padding: 0; border: 1px solid rgba(123, 230, 178, 0.14); border-radius: 7px; color: var(--green); background: rgba(123, 230, 178, 0.08); }
-.run-command:hover { border-color: rgba(123, 230, 178, .4); background: rgba(123, 230, 178, 0.15); }
-.run-command svg { width: 14px; height: 14px; }
+.terminal-shortcuts { display: none; }
 .terminal-footer { display: flex; align-items: center; gap: 15px; min-height: 37px; padding: 0 20px; border-top: 1px solid rgba(148, 163, 184, 0.06); color: #566476; background: #0a0e13; font-size: 9px; }
 .terminal-footer kbd { margin-right: 3px; min-height: 15px; padding: 0 4px; font-size: 8px; }
 .terminal-ready { display: flex; align-items: center; gap: 6px; margin-left: auto; color: #769d8a; }
@@ -523,11 +515,12 @@ h1 { margin-bottom: 9px; color: #edf3f6; font-size: clamp(25px, 3vw, 34px); line
   h1 { font-size: 27px; }
   .terminal-toolbar { padding: 0 13px; }
   .runtime-badge { display: none; }
-  .terminal-body { height: 290px; min-height: 290px; padding-right: 14px; padding-left: 14px; }
-  .command-line { padding: 0 12px; gap: 6px; }
-  .prompt-path { max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
-  .terminal-footer { padding: 0 12px; }
-  .terminal-ready { display: none; }
+  .terminal-body { height: 290px; min-height: 290px; padding: 12px 10px 8px; }
+  .terminal-shortcuts { display: flex; align-items: center; gap: 6px; min-height: 42px; padding: 5px 10px; overflow-x: auto; border-top: 1px solid rgba(148, 163, 184, 0.08); background: #0a0e13; scrollbar-width: none; }
+  .terminal-shortcuts::-webkit-scrollbar { display: none; }
+  .terminal-shortcuts button { flex: 0 0 auto; min-width: 35px; height: 30px; padding: 0 8px; border: 1px solid rgba(148, 163, 184, 0.15); border-radius: 6px; color: #aebbc7; background: #111720; font: 10px var(--mono); }
+  .terminal-shortcuts button:hover, .terminal-shortcuts button:focus-visible { border-color: rgba(123, 230, 178, 0.4); color: var(--green-bright); background: rgba(123, 230, 178, 0.08); }
+  .terminal-footer { display: none; }
   .terminal-rail, .gui-side-column { display: flex; }
   .quick-card, .system-card { width: 100%; }
   .tool-grid, .package-grid { grid-template-columns: 1fr; }
