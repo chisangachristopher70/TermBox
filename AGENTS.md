@@ -31,9 +31,12 @@ is more secure, more observable, and easier for the next engineer to verify.
 ├── README.md              # product narrative, deployment
 ├── index.html             # static app shell (views: terminal, gui, files, packages, activity)
 ├── styles.css             # dark UI system (no inline styles anywhere — CSP)
-├── app.js                 # terminal simulator + view interactions (Phase 0 only)
+├── app.js                 # simulated commands + view interactions
+├── terminal-view.js       # lazy-loaded xterm.js renderer; no shell connection
+├── terminal-text.js       # safe plain-text encoding for simulated terminal output
+├── tests/                 # Node built-in tests for terminal text handling
 ├── api/health.js          # Vercel function: GET /api/health — runs NO commands
-├── package.json           # Vite scripts, Node >= 20
+├── package.json           # Vite and xterm.js dependencies, Node >= 20
 ├── vite.config.js         # build to dist/, dev/preview on 0.0.0.0
 ├── vercel.json            # build, routing, security headers, caching
 └── docs/
@@ -56,22 +59,26 @@ is more secure, more observable, and easier for the next engineer to verify.
 4. **Never delete, rename, or move the repository root or `.git`.**
 5. **Do not weaken security headers** (HSTS, frame-options, nosniff, permissions
    policy, CSP). Tightening them is welcome if the app still works.
-6. **Terminal output is untrusted data.** Render with `textContent`/DOM text nodes
-   (or xterm.js later). Never interpolate terminal bytes into HTML.
-7. **Runtime stays lean.** The static shell has zero runtime dependencies today.
-   Adding one requires a written justification (what it costs, what it replaces,
-   bundle size). Prefer platform APIs.
+6. **Terminal output is untrusted data.** Render DOM output with `textContent` or
+   xterm.js. Before writing dynamic text to xterm, strip/encode control bytes; only
+   fixed application-owned ANSI styling may remain. Never interpolate terminal bytes into HTML.
+7. **Runtime stays lean.** The app currently bundles xterm.js plus its Fit and
+   optional WebGL addons locally; it loads no terminal code from a CDN. Adding
+   another runtime dependency requires a written justification (what it costs,
+   what it replaces, bundle size). Prefer platform APIs.
 8. **Work only on the branch you were given.** Commit there; never switch branches.
 
 ## 4. Commands
 
 ```bash
-npm ci                  # install (dev deps only: vite)
+npm ci                  # install Vite + xterm.js dependencies
 npm run dev             # dev server on 0.0.0.0 (preview-proxied)
 npm run build           # production build -> dist/
+npm test                # Node built-in tests
 npm run preview         # serve dist/ on 0.0.0.0
 node --check app.js     # fast syntax gate
-python3 -m http.server 4173 --bind 0.0.0.0   # no-build static serve
+node --check terminal-view.js
+node --check terminal-text.js
 ```
 
 ## 5. Verification protocol (non-negotiable)
@@ -108,7 +115,7 @@ A task is **done** only when you have produced **evidence**, not vibes:
 | System design, protocols, data model, roadmap | `docs/ARCHITECTURE.md` |
 | A settled technical decision + rationale | `docs/adr/NNNN-title.md` (use the template in `docs/adr/README.md`) |
 | Engineering process / thinking rules | `docs/ENGINEERING_GUIDELINES.md` |
-| UI | `index.html` + `styles.css` + `app.js` (until the Phase 1 rewrite) |
+| UI | `index.html` + `styles.css` + `app.js` + `terminal-view.js` + `terminal-text.js` (until the broader Phase 1 rewrite) |
 | Edge/API behavior | `api/`, `vercel.json` |
 
 ## 8. Forbidden

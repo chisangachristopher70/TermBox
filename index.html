@@ -64,7 +64,7 @@
         <div class="sidebar-spacer"></div>
         <div class="sidebar-status">
           <span class="status-dot"></span>
-          <span><strong>Sandbox online</strong><small>Last sync just now</small></span>
+          <span><strong>Browser simulator</strong><small>No remote shell attached</small></span>
         </div>
         <div class="sidebar-profile">
           <div class="avatar">JD</div>
@@ -80,7 +80,7 @@
           </div>
           <div class="topbar-actions">
             <button class="shortcut-hint" type="button" data-action="palette"><span class="command-key">⌘</span><span>Quick open</span><kbd>K</kbd></button>
-            <div class="connection-pill"><span class="status-dot"></span>Connected</div>
+            <div class="connection-pill"><span class="status-dot"></span>Local demo</div>
             <button class="icon-button" type="button" aria-label="Notifications" data-action="notify"><span data-icon="bell"></span><i></i></button>
             <div class="top-avatar">JD</div>
           </div>
@@ -108,10 +108,10 @@
                 <div class="terminal-toolbar">
                   <div class="terminal-title">
                     <div class="traffic-lights" aria-hidden="true"><span></span><span></span><span></span></div>
-                    <div><strong>termbox <span class="muted-slash">/</span> bash</strong><small><span class="status-dot"></span> main session</small></div>
+                    <div><strong>termbox <span class="muted-slash">/</span> simulator</strong><small><span class="status-dot"></span> local simulation</small></div>
                   </div>
                   <div class="terminal-toolbar-actions">
-                    <span class="runtime-badge"><span class="pulse-dot"></span> sandbox</span>
+                    <span class="runtime-badge"><span class="pulse-dot"></span> simulator</span>
                     <button class="toolbar-icon" type="button" data-action="split" aria-label="Split terminal"><span data-icon="split"></span></button>
                     <button class="toolbar-icon" type="button" data-action="terminal-menu" aria-label="Terminal options"><span data-icon="more"></span></button>
                   </div>
@@ -140,7 +140,7 @@
                   </div>
                 </div>
                 <div class="rail-card system-card surface-card">
-                  <div class="card-heading"><div><p class="section-kicker">SANDBOX</p><h2>System health</h2></div><span class="health-badge">HEALTHY</span></div>
+                  <div class="card-heading"><div><p class="section-kicker">DEMO METRICS</p><h2>System health</h2></div><span class="health-badge">SAMPLE</span></div>
                   <div class="health-score"><div><strong>98</strong><span>/100</span></div><div class="health-ring"><svg viewBox="0 0 44 44" aria-hidden="true"><circle class="ring-track" cx="22" cy="22" r="17"></circle><circle class="ring-progress" cx="22" cy="22" r="17"></circle></svg><span>OK</span></div></div>
                   <div class="metric"><div><span>CPU</span><strong>12%</strong></div><div class="metric-bar"><span data-width="12%"></span></div></div>
                   <div class="metric"><div><span>Memory</span><strong>384 MB <em>/ 1 GB</em></strong></div><div class="metric-bar warm"><span data-width="38%"></span></div></div>
@@ -182,8 +182,8 @@
                 </article>
               </div>
               <aside class="gui-side-column">
-                <article class="live-card surface-card"><div class="card-heading"><div><p class="section-kicker">NOW PLAYING</p><h2>Workspace status</h2></div><span class="live-label"><span></span>LIVE</span></div><div class="visualizer"><span data-height="32%"></span><span data-height="58%"></span><span data-height="42%"></span><span data-height="80%"></span><span data-height="52%"></span><span data-height="92%"></span><span data-height="44%"></span><span data-height="68%"></span><span data-height="35%"></span><span data-height="76%"></span><span data-height="48%"></span><span data-height="61%"></span></div><div class="status-track"><span><i class="status-dot"></i> All systems operational</span><strong>98%</strong></div></article>
-                <article class="gui-info-card surface-card"><div class="card-heading"><div><p class="section-kicker">ACTIVE SESSION</p><h2>main</h2></div><button class="toolbar-icon" type="button" data-action="session-menu" aria-label="Session options"><span data-icon="more"></span></button></div><div class="session-command"><span class="prompt-symbol">›</span><div><strong>npm run build</strong><small>Finished in 4.2s</small></div><span class="checkmark">✓</span></div><div class="session-detail"><span>Uptime</span><strong>02:14:08</strong></div><div class="session-detail"><span>Environment</span><strong>Node 20.11</strong></div><button class="outline-button" type="button" data-mode="terminal"><span data-icon="terminal"></span> Open terminal</button></article>
+                <article class="live-card surface-card"><div class="card-heading"><div><p class="section-kicker">SAMPLE DATA</p><h2>Workspace status</h2></div><span class="live-label"><span></span>DEMO</span></div><div class="visualizer"><span data-height="32%"></span><span data-height="58%"></span><span data-height="42%"></span><span data-height="80%"></span><span data-height="52%"></span><span data-height="92%"></span><span data-height="44%"></span><span data-height="68%"></span><span data-height="35%"></span><span data-height="76%"></span><span data-height="48%"></span><span data-height="61%"></span></div><div class="status-track"><span><i class="status-dot"></i> Sample status only</span><strong>98%</strong></div></article>
+                <article class="gui-info-card surface-card"><div class="card-heading"><div><p class="section-kicker">SAMPLE SESSION</p><h2>main</h2></div><button class="toolbar-icon" type="button" data-action="session-menu" aria-label="Session options"><span data-icon="more"></span></button></div><div class="session-command"><span class="prompt-symbol">›</span><div><strong>npm run build</strong><small>Finished in 4.2s</small></div><span class="checkmark">✓</span></div><div class="session-detail"><span>Uptime</span><strong>02:14:08</strong></div><div class="session-detail"><span>Environment</span><strong>Node 20.11</strong></div><button class="outline-button" type="button" data-mode="terminal"><span data-icon="terminal"></span> Open terminal</button></article>
                 <article class="upgrade-card"><span class="upgrade-icon">✦</span><div><p>Make more room</p><strong>Upgrade your workspace</strong><small>More storage, longer sessions.</small></div><button type="button" data-action="upgrade" aria-label="Upgrade">↗</button></article>
               </aside>
             </div>
@@ -191,24 +191,24 @@
 
           <section class="view-panel hidden" id="filesView" aria-label="Files view">
             <div class="files-page surface-card">
-              <div class="files-page-head"><div><p class="eyebrow"><span class="eyebrow-line"></span>WORKSPACE FILES</p><h2>termbox <span>/</span> projects</h2><p>Three files synced to this sandbox.</p></div><div class="files-actions"><button class="outline-button" type="button" data-action="upload"><span data-icon="upload"></span> Import</button><button class="primary-button" type="button" data-action="new-file"><span>+</span> New file</button></div></div>
+              <div class="files-page-head"><div><p class="eyebrow"><span class="eyebrow-line"></span>WORKSPACE FILES</p><h2>termbox <span>/</span> projects</h2><p>Three sample files in this preview.</p></div><div class="files-actions"><button class="outline-button" type="button" data-action="upload"><span data-icon="upload"></span> Import</button><button class="primary-button" type="button" data-action="new-file"><span>+</span> New file</button></div></div>
               <div class="file-path"><span data-icon="folder"></span><span>~</span><b>/</b><span>projects</span><b>/</b><strong>termbox</strong><span class="file-count">3 items</span></div>
               <div class="large-file-list">
                 <button class="large-file-row" type="button" data-file="app.js"><span class="large-file-icon js">JS</span><span><strong>app.js</strong><small>JavaScript source</small></span><span class="file-modified">8.4 KB <small>Just now</small></span><span class="row-chevron">›</span></button>
                 <button class="large-file-row" type="button" data-file="styles.css"><span class="large-file-icon css">#</span><span><strong>styles.css</strong><small>Stylesheet</small></span><span class="file-modified">14.2 KB <small>12 min ago</small></span><span class="row-chevron">›</span></button>
                 <button class="large-file-row" type="button" data-file="README.md"><span class="large-file-icon md">M</span><span><strong>README.md</strong><small>Markdown document</small></span><span class="file-modified">3.1 KB <small>Yesterday</small></span><span class="row-chevron">›</span></button>
               </div>
-              <div class="files-empty-note"><span data-icon="cloud"></span><span>Files are local to your browser session. Connect a repo to sync them.</span><button class="text-button" type="button" data-action="connect">Connect repo <span>→</span></button></div>
+              <div class="files-empty-note"><span data-icon="cloud"></span><span>Preview only: files are not stored or synced.</span><button class="text-button" type="button" data-action="connect">Connect repo <span>→</span></button></div>
             </div>
           </section>
 
           <section class="view-panel hidden" id="packagesView" aria-label="Packages view">
-            <div class="page-heading-row"><div><p class="eyebrow"><span class="eyebrow-line"></span>PACKAGE MANAGER</p><h2>Tools for your terminal.</h2><p>Install browser-safe utilities into your TermBox workspace.</p></div><div class="package-search"><span data-icon="search"></span><input type="search" placeholder="Search packages" aria-label="Search packages" /></div></div>
+            <div class="page-heading-row"><div><p class="eyebrow"><span class="eyebrow-line"></span>PACKAGE MANAGER</p><h2>Tools for your terminal.</h2><p>Sample catalog only; installs do not change a real environment.</p></div><div class="package-search"><span data-icon="search"></span><input type="search" placeholder="Search packages" aria-label="Search packages" /></div></div>
             <div class="package-grid"><article class="package-card surface-card"><div class="package-icon rg">rg</div><div><h3>ripgrep</h3><p>Fast recursive search</p></div><span class="installed-badge">Installed</span><button type="button" class="package-command" data-command="rg --help">$ rg --help</button></article><article class="package-card surface-card"><div class="package-icon py">Py</div><div><h3>python</h3><p>Python runtime 3.12</p></div><span class="installed-badge">Installed</span><button type="button" class="package-command" data-command="python --version">$ python --version</button></article><article class="package-card surface-card"><div class="package-icon no">JS</div><div><h3>nodejs</h3><p>JavaScript runtime 20</p></div><span class="installed-badge">Installed</span><button type="button" class="package-command" data-command="node --version">$ node --version</button></article><article class="package-card surface-card"><div class="package-icon gi">git</div><div><h3>git</h3><p>Version control system</p></div><span class="installed-badge">Installed</span><button type="button" class="package-command" data-command="git status">$ git status</button></article><article class="package-card surface-card"><div class="package-icon jq">jq</div><div><h3>jq</h3><p>JSON command-line processor</p></div><button type="button" class="install-button" data-command="pkg install jq">Install package <span>+</span></button></article><article class="package-card surface-card"><div class="package-icon cu">cu</div><div><h3>curl</h3><p>Transfer data with URLs</p></div><button type="button" class="install-button" data-command="pkg install curl">Install package <span>+</span></button></article></div>
           </section>
 
           <section class="view-panel hidden" id="activityView" aria-label="Activity view">
-            <div class="page-heading-row"><div><p class="eyebrow"><span class="eyebrow-line"></span>ACTIVITY LOG</p><h2>Everything in one stream.</h2><p>Commands and workspace events from your current session.</p></div><button class="outline-button" type="button" data-action="clear-activity"><span data-icon="trash"></span> Clear log</button></div>
+            <div class="page-heading-row"><div><p class="eyebrow"><span class="eyebrow-line"></span>ACTIVITY LOG</p><h2>Everything in one stream.</h2><p>Sample commands and workspace events; this is not a live audit log.</p></div><button class="outline-button" type="button" data-action="clear-activity"><span data-icon="trash"></span> Clear log</button></div>
             <div class="full-activity surface-card"><div class="activity-filter"><button class="filter active" type="button">All activity</button><button class="filter" type="button">Commands</button><button class="filter" type="button">Workspace</button><span class="activity-date">Today</span></div><div class="timeline-item"><span class="timeline-dot green"></span><div><strong>npm run build</strong><p>Build completed successfully in 4.2s</p></div><time>2 min ago</time></div><div class="timeline-item"><span class="timeline-dot blue"></span><div><strong>File updated</strong><p><b>app.js</b> was saved to the termbox workspace</p></div><time>Just now</time></div><div class="timeline-item"><span class="timeline-dot purple"></span><div><strong>Package installed</strong><p>ripgrep is ready to use in the terminal</p></div><time>Yesterday</time></div><div class="timeline-item"><span class="timeline-dot orange"></span><div><strong>Session started</strong><p>New TermBox sandbox connected</p></div><time>Yesterday</time></div></div>
           </section>
         </div>

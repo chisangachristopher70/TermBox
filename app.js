@@ -1,5 +1,5 @@
-/* TermBox is intentionally dependency-free so the same build can be deployed to Vercel,
-   GitHub Pages, or shared as a static folder. The shell below is a browser-safe simulator,
+/* TermBox bundles its dependencies locally so the production build can be deployed as a
+   static site without remote scripts. The command adapter below is a browser-safe simulator,
    not a remote command runner. */
 
 /* Apply layout values from data attributes via the CSSOM. Inline style="" attributes are
@@ -62,58 +62,45 @@ const toastRegion = document.querySelector('.toast-region');
 const paletteBackdrop = document.getElementById('paletteBackdrop');
 const paletteInput = document.getElementById('paletteInput');
 const paletteResults = document.getElementById('paletteResults');
+let terminalView;
+let terminalViewReady;
+commandInput.disabled = true;
 
 function appendLine(text = '', type = 'output', className = '') {
-  const line = document.createElement('div');
-  line.className = `terminal-line ${type} ${className}`.trim();
-  line.textContent = text;
-  terminalOutput.appendChild(line);
-  terminalOutput.scrollTop = terminalOutput.scrollHeight;
-  return line;
+  if (!terminalView) return;
+  terminalView.writeLine(text, className || (type === 'command' ? 'command' : ''));
 }
 
 function appendCommand(command) {
-  const line = document.createElement('div');
-  line.className = 'terminal-line command';
-  const prompt = document.createElement('span');
-  prompt.className = 'prompt-symbol';
-  prompt.textContent = '›';
-  const path = document.createElement('span');
-  path.className = 'prompt-path';
-  path.textContent = '~/projects/termbox';
-  const text = document.createElement('span');
-  text.className = 'command-text';
-  text.textContent = `$ ${command}`;
-  line.append(prompt, path, text);
-  terminalOutput.appendChild(line);
-  return line;
+  terminalView?.writeCommand(command);
 }
 
 function appendSpacer() {
-  const line = document.createElement('div');
-  line.className = 'terminal-line spacer';
-  terminalOutput.appendChild(line);
+  terminalView?.writeSpacer();
 }
 
 function bootTerminal() {
-  terminalOutput.innerHTML = '';
+  terminalView.clear();
   appendLine('Welcome to TermBox, Jordan.', 'output', 'highlight');
   appendLine('A browser-native Linux workspace for curious people.', 'output');
   appendSpacer();
   appendCommand('neofetch');
-  const fetchLine = document.createElement('div');
-  fetchLine.className = 'terminal-line output';
-  fetchLine.innerHTML = '<span class="term-ascii">        ████████╗██████╗<br>        ╚══██╔══╝██╔══██╗<br>           ██║   ██████╔╝<br>           ██║   ██╔══██╗<br>           ██║   ██████╔╝<br>           ╚═╝   ╚═════╝</span>';
-  terminalOutput.appendChild(fetchLine);
-  appendLine('  termbox@web  •  browser sandbox  •  session online', 'output', 'highlight');
+  appendLine('        ████████╗██████╗\n        ╚══██╔══╝██╔══██╗\n           ██║   ██████╔╝\n           ██║   ██╔══██╗\n           ██║   ██████╔╝\n           ╚═╝   ╚═════╝', 'output', 'success');
+  appendLine('  termbox@web  •  browser simulator  •  local session', 'output', 'highlight');
   appendLine('  shell: bash 5.2  •  node: v20.11.1  •  cwd: ~/projects/termbox', 'output');
   appendSpacer();
   appendLine("Type 'help' to see what you can run.", 'output', 'success');
-  terminalOutput.scrollTop = 0;
+  terminalView.scrollToBottom();
 }
 
 function clearTerminal() {
-  terminalOutput.innerHTML = '';
+  if (!terminalView) {
+    terminalViewReady?.then((ready) => {
+      if (ready) clearTerminal();
+    });
+    return;
+  }
+  terminalView.clear();
   appendLine('Terminal cleared.', 'output', 'success');
   appendSpacer();
   commandInput.focus();
@@ -145,8 +132,8 @@ function commandResponse(rawCommand) {
       '  neofetch             show workspace information',
       '  gui                  switch to GUI mode',
       '  clear                clear the terminal',
-      '  pkg <command>        manage sandbox packages',
-      '  npm run <script>     run a project script',
+      '  pkg <command>        simulate package actions',
+      '  npm run <script>     simulate a project script',
       '  echo <text>          print a message',
       '  date                 print the current date'
     ]);
@@ -168,9 +155,9 @@ function commandResponse(rawCommand) {
     printLines([
       { text: '  TermBox web workspace', className: 'highlight' },
       '  ─────────────────────',
-      '  OS       TermBox Sandbox (browser)',
-      '  Host     vercel-edge / local session',
-      '  Kernel   web-runtime 1.0',
+      '  OS       TermBox browser simulator',
+      '  Host     local browser session',
+      '  Kernel   simulated runtime',
       '  Shell    bash 5.2',
       '  Memory   384 MB / 1 GB'
     ]);
@@ -204,7 +191,7 @@ function commandResponse(rawCommand) {
       { text: '> termbox@0.1.0 dev', className: 'highlight' },
       '> vite --host 0.0.0.0',
       '',
-      { text: '  VITE v5.4.10  ready in 412 ms', className: 'success' },
+      { text: '  VITE v6.4.4  ready in 412 ms', className: 'success' },
       '  ➜  Local:   http://localhost:5173/',
       { text: '  ➜  press h + enter to show help', className: 'highlight' }
     ]);
@@ -232,7 +219,7 @@ function commandResponse(rawCommand) {
       { text: `✓ ${packageName} is ready in your workspace.`, className: 'success' }
     ]);
   } else if (lower === 'exit') {
-    appendLine('This browser sandbox stays open so you can keep building.', 'output', 'warn');
+    appendLine('This simulator has no shell process to exit.', 'output', 'warn');
   } else if (lower === 'gui' || lower === 'termbox gui') {
     appendLine('Opening the visual workspace...', 'output', 'success');
     setTimeout(() => setView('gui'), 220);
@@ -249,10 +236,16 @@ function commandResponse(rawCommand) {
   }
 
   appendSpacer();
-  terminalOutput.scrollTop = terminalOutput.scrollHeight;
+  terminalView?.scrollToBottom();
 }
 
 function runCommand(rawCommand) {
+  if (!terminalView) {
+    terminalViewReady?.then((ready) => {
+      if (ready) runCommand(rawCommand);
+    });
+    return;
+  }
   const command = rawCommand.trim();
   if (!command) {
     commandInput.focus();
@@ -276,7 +269,12 @@ function setView(view) {
   document.querySelectorAll('.mode-button').forEach((button) => button.classList.toggle('active', button.dataset.mode === (view === 'gui' ? 'gui' : 'terminal')));
   breadcrumbCurrent.textContent = viewLabels[view] || view;
   document.title = `${view === 'terminal' ? 'Terminal' : view === 'gui' ? 'GUI workspace' : view[0].toUpperCase() + view.slice(1)} — TermBox`;
-  if (view === 'terminal') setTimeout(() => commandInput.focus(), 30);
+  if (view === 'terminal') {
+    setTimeout(() => {
+      terminalView?.fit();
+      if (!commandInput.disabled) commandInput.focus();
+    }, 30);
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -385,7 +383,7 @@ document.querySelectorAll('[data-tool]').forEach((button) => {
     if (tool === 'files') setView('files');
     else if (tool === 'packages') setView('packages');
     else if (tool === 'editor') showToast('Code Studio is ready to launch.', 'code');
-    else showToast('System monitor is watching your sandbox.', 'pulse');
+    else showToast('System monitor preview uses sample metrics.', 'pulse');
   });
 });
 
@@ -411,7 +409,7 @@ document.querySelectorAll('[data-action]').forEach((button) => {
     else if (action === 'clear-activity') showToast('Activity log cleared for this session.', 'trash');
     else if (action === 'docs') showToast('Documentation will open in a new tab.', 'book');
     else if (action === 'feedback') showToast('Thanks — feedback channel is ready.', 'bell');
-    else if (action === 'status') showToast('All TermBox systems are operational.', 'pulse');
+    else if (action === 'status') showToast('This preview has no live system status feed.', 'pulse');
   });
 });
 
@@ -465,4 +463,21 @@ document.querySelector('.package-search input')?.addEventListener('input', (even
   });
 });
 
-bootTerminal();
+terminalViewReady = import('./terminal-view.js')
+  .then(({ TerminalView }) => {
+    terminalView = new TerminalView(terminalOutput);
+    terminalView.mount();
+    commandInput.disabled = false;
+    bootTerminal();
+    if (currentView === 'terminal') commandInput.focus();
+    return true;
+  })
+  .catch((error) => {
+    console.error('TermBox could not initialize the xterm.js terminal.', error);
+    terminalView = undefined;
+    commandInput.disabled = true;
+    const terminalReady = document.querySelector('.terminal-ready');
+    if (terminalReady) terminalReady.textContent = 'unavailable';
+    showToast('The terminal display could not start. Refresh to retry.', 'terminal');
+    return false;
+  });
