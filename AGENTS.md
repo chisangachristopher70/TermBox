@@ -36,6 +36,7 @@ is more secure, more observable, and easier for the next engineer to verify.
 ├── terminal-view.js       # lazy-loaded xterm.js input/display; no shell connection
 ├── terminal-line.js       # simulator completion, editable line buffer, narrow viewport
 ├── terminal-text.js       # safe plain-text encoding for simulated terminal output
+├── monitoring.js          # production-only Vercel Web Analytics + Speed Insights (ADR 0008)
 ├── packages/protocol/tsp.js # proposed TSP v1 browser frame codec; no Gateway yet
 ├── tests/                 # Node built-in tests for input, simulator tree, text, and TSP frames
 ├── api/health.js          # Vercel function: GET /api/health — runs NO commands
