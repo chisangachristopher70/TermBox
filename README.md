@@ -11,6 +11,7 @@ This repository is a static web prototype built with Vite. The terminal view use
 | **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | **The production architecture — source of truth.** How TermBox becomes a real Kali-in-the-browser platform: hybrid runtime (in-browser WASM Linux + Firecracker/gVisor sandboxes), Terminal Stream Protocol, control plane, data model, security/threat model, reliability, cost, and the phased roadmap. |
 | **[docs/ENGINEERING_GUIDELINES.md](docs/ENGINEERING_GUIDELINES.md)** | The engineering operating system: how to think, design, build, verify, operate, and secure — including the AI agent execution protocol that makes any agent working on this repo effective. |
 | **[docs/adr/](docs/adr/README.md)** | Architecture Decision Records: the settled calls (runtime substrate, terminal protocol, engine, persistence, offensive-workload safety) with the evidence that would reverse each one. |
+| **[docs/protocol/TSP-v1.md](docs/protocol/TSP-v1.md)** | Proposed TSP v1 wire contract and conformance notes; no Gateway is implemented yet. |
 | **[AGENTS.md](AGENTS.md)** | Operating manual and invariants for AI agents (and humans) contributing to this repository. |
 
 The product plan below describes the shipped prototype and the original phase
@@ -47,9 +48,11 @@ in **[docs/ARCHITECTURE.md §15](docs/ARCHITECTURE.md)**. Summary:
 
 #### Phase 1 — the real terminal
 
-**Current checkpoint:** this branch now bundles xterm.js as the terminal renderer,
+**Current checkpoint:** this branch bundles xterm.js as the terminal renderer,
 with FitAddon and optional WebGL acceleration. Commands still go to the safe
-browser simulator; there is no PTY, TSP connection, or remote shell yet.
+browser simulator; there is no PTY, TSP connection, or remote shell yet. A
+JavaScript TSP frame codec and tests now exist, alongside a proposed wire contract
+that still needs Gateway/maintainer conformance review.
 
 Remaining Phase 1 work:
 
@@ -79,7 +82,7 @@ Use Node.js 20+ and Vite to resolve and bundle the local xterm.js packages:
 
 ```bash
 npm ci
-npm test          # terminal-output sanitizer tests
+npm test          # terminal-output sanitizer + TSP codec tests
 npm run dev       # development server on 0.0.0.0
 npm run build     # production build into dist/
 npm run preview   # serve dist/ locally
@@ -148,7 +151,9 @@ Google Drive is useful for sharing a zipped snapshot or design handoff, but it i
 ├── docs/
 │   ├── ARCHITECTURE.md          # production system design (source of truth)
 │   ├── ENGINEERING_GUIDELINES.md# engineering operating system
+│   ├── protocol/TSP-v1.md       # proposed TSP wire contract
 │   └── adr/                     # architecture decision records
+├── packages/protocol/tsp.js    # browser-side TSP v1 frame codec (no Gateway yet)
 ├── AGENTS.md        # operating manual for AI agents and contributors
 ├── index.html       # semantic app shell and view markup
 ├── styles.css       # responsive dark UI system

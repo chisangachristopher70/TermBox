@@ -251,50 +251,42 @@ reduced-motion honored.
 never HTML. OSC-8 hyperlinks are parsed and opened only via a sanitized,
 user-confirmed path; clipboard OSC sequences require user gesture policy.
 
-### 6.2 Terminal Stream Protocol (TSP) — v1 spec (ADR-002)
+### 6.2 Terminal Stream Protocol (TSP) — v1 contract (ADR-002; wire details proposed in ADR-0007)
 
-One WebSocket (`wss://…/tsp`), binary frames, framed as `[1B type][payload]`:
+The candidate wire contract uses one TLS WebSocket (`wss://…/tsp`) with subprotocol `termbox.tsp.v1`. Each binary WebSocket message is one TSP frame (no redundant TSP length prefix). The 5-byte frame header is `[1B type][4B big-endian stream_id]`; stream ID `0` is reserved for connection-level CONTROL, and non-zero client-allocated IDs multiplex sessions.
 
 | Type | Name | Payload |
 | --- | --- | --- |
-| `0x01` | DATA | Opaque PTY byte stream |
-| `0x02` | CONTROL | UTF-8 JSON message |
-| `0x03` | CREDIT | 4-byte big-endian flow-control credit grant |
-| `0x04` | MARK | Replay/scrollback boundary marker |
+| `0x01` | DATA | Browser → Gateway: raw PTY input. Gateway → browser: 8-byte big-endian first output-byte sequence + opaque PTY output bytes. |
+| `0x02` | CONTROL | UTF-8 JSON object with string `t`; output sequence fields are decimal strings. |
+| `0x03` | CREDIT | 4-byte big-endian grant of output PTY bytes for that stream. |
+| `0x04` | MARK | 1-byte marker + 8-byte big-endian output-sequence boundary (`REPLAY_START`, `GAP`, or `LIVE_START`). |
 
-CONTROL messages (subset):
+DATA is limited to 64 KiB of PTY bytes per frame, CONTROL to 64 KiB, and one CREDIT grant to 512 KiB. The canonical candidate format, control messages, sequencing, replay ordering, and validation rules are in [`docs/protocol/TSP-v1.md`](protocol/TSP-v1.md). That specification is proposed pending Gateway/maintainer conformance review; this repository currently contains only the JavaScript codec and unit tests, not a WebSocket Gateway or PTY connection.
+
+CONTROL examples (the binary frame header carries the stream ID):
 
 ```jsonc
-// client → server
-{"t":"attach","session":"ses_01H…","ticket":"tkt_…","last_seq":18421,
+// client → server; last_seq is the last output byte consumed ("0" means none)
+{"t":"attach","session":"ses_01H…","ticket":"tkt_…","last_seq":"18421",
  "term":{"cols":120,"rows":32,"name":"xterm-256color"}}
 {"t":"resize","cols":132,"rows":43}
 {"t":"signal","name":"SIGINT"}
 {"t":"ping","ts":1770000000000}
 
-// server → client
-{"t":"ready","seq_base":18422,"runtime":"firecracker",
+// server → client; seq_base is always last_seq + 1 (a later GAP marker may advance it)
+{"t":"ready","seq_base":"18422","runtime":"firecracker",
  "image":"kali/2026.1-core@sha256:…","caps":["record","resize","signal","suspend"]}
 {"t":"resume","replayed":240,"gap":false}
 {"t":"warn","code":"IDLE_SUSPEND","in_ms":60000}
 {"t":"exit","code":0,"signal":null}
 ```
 
-**Guarantees:**
-- **Ordered, lossless while connected.** Every DATA byte carries a monotonically
-  increasing `seq` (implicit, tracked by both sides).
-- **Resume without loss** (Q6): gateway keeps a per-session replay ring
-  (default 2 MB / 60 s). Reconnect sends `last_seq`; server replays the delta or
-  answers `gap:true` (client shows "output trimmed" and re-syncs via `MARK`).
-  On gateway death, resume targets the session's node-agent ring (second line of
-  defense) or restores from snapshot.
-- **Backpressure** (no `yes`-flood outages): server never has more than 512 KB
-  uncredited DATA in flight; when a slow client exhausts credit, the node applies
-  TTY throttling (and after a hard limit, kills with a visible warning) — the
-  browser is never a bottomless buffer.
-- **Resize & signals** are first-class, idempotent control messages.
-- **Recording is free**: gateway tees DATA to an asciinema-v2-compatible recorder
-  (opt-in per session, retention per tier) → shareable session replays.
+**Required guarantees:**
+- **Ordered output while connected.** Each output DATA frame declares its first byte sequence; subsequent bytes are contiguous. The client validates frame continuity and advances `last_seq` only after xterm confirms consumption.
+- **Explicit resume gap.** The Gateway keeps a per-session output replay ring (2 MiB / 60 s). Attach sends `last_seq`; replay is byte-exact when retained. If retention has trimmed requested bytes, the Gateway sends `resume.gap: true` and a `GAP` MARK with the first retained sequence. The UI must show trimmed output rather than imply lossless resume. Snapshot/node-agent recovery is a later runtime responsibility.
+- **Bounded backpressure.** Credit is per stream and counts PTY bytes only. The Gateway caps outstanding credit and unconsumed output at 512 KiB, stops reading/throttles the PTY when exhausted, and never makes the browser a bottomless buffer.
+- **Resize and signals** are first-class, idempotent controls; output recording remains an optional Gateway responsibility.
 
 ### 6.3 Sequence: connect, run, disconnect, resume
 
@@ -308,18 +300,21 @@ sequenceDiagram
 
     B->>S: POST /api/sessions (tier, image, net-policy)
     S-->>B: session id + attach ticket (one-time, 30s TTL)
-    B->>G: WSS /tsp  attach{ticket, last_seq}
-    G->>S: validate ticket, locate session
-    G->>N: attach(pty)
+    B->>G: WSS /tsp, subprotocol termbox.tsp.v1
+    B->>G: CONTROL stream_id=1 attach{ticket,last_seq:"18421"}
+    G->>S: validate ticket and session ownership
+    G->>N: attach(stream_id=1, pty)
     N->>V: vsock: spawn/reattach PTY
-    V-->>B: shell banner + prompt (DATA frames, seq++)
-    B->>G: DATA "nmap -sV lab.target\n"
-    G->>V: stdio
-    V-->>B: output… (credited chunks)
+    G-->>B: CONTROL ready{seq_base:"18422"}
+    B->>G: CREDIT stream_id=1 grant=524288
+    V-->>G: PTY output bytes
+    G-->>B: DATA stream_id=1 first_seq=18422 + output bytes
+    B->>G: DATA stream_id=1 + raw PTY input bytes
+    G->>V: PTY input
     Note over B,G: network blip / deploy
-    B->>G: WSS reconnect  attach{last_seq:18421}
-    G-->>B: resume{replayed:240} + DATA delta
-    B->>G: CREDIT grant
+    B->>G: WSS reconnect; attach{last_seq:"18421"}
+    G-->>B: ready; replay MARK/DATA; resume{replayed:240,gap:false}; LIVE_START
+    B->>G: replacement CREDIT after xterm consumes output
     G-->>B: warn{IDLE_SUSPEND,in_ms} → later snapshot
 ```
 
@@ -644,6 +639,7 @@ program audited; DR game day (region restore) passes.
 | [0004](adr/0004-workspace-persistence.md) | Snapshot + volume persistence model (S3 + Postgres) | Accepted |
 | [0005](adr/0005-offensive-workload-safety.md) | Trust & safety model for offensive-security workloads | Accepted |
 | [0006](adr/0006-gateway-language.md) | Go for terminal gateway/scheduler/node-agent | Proposed |
+| [0007](adr/0007-tsp-v1-wire-details.md) | TSP v1 wire framing and multiplexing contract | Proposed |
 
 ---
 
