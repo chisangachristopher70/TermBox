@@ -32,9 +32,12 @@ is more secure, more observable, and easier for the next engineer to verify.
 ├── index.html             # static app shell (views: terminal, gui, files, packages, activity)
 ├── styles.css             # dark UI system (no inline styles anywhere — CSP)
 ├── app.js                 # simulated commands + view interactions
-├── terminal-view.js       # lazy-loaded xterm.js renderer; no shell connection
+├── simulator-filesystem.js # fixed in-memory sample tree; no host file access
+├── terminal-view.js       # lazy-loaded xterm.js input/display; no shell connection
+├── terminal-line.js       # simulator completion, editable line buffer, narrow viewport
 ├── terminal-text.js       # safe plain-text encoding for simulated terminal output
-├── tests/                 # Node built-in tests for terminal text handling
+├── packages/protocol/tsp.js # proposed TSP v1 browser frame codec; no Gateway yet
+├── tests/                 # Node built-in tests for input, simulator tree, text, and TSP frames
 ├── api/health.js          # Vercel function: GET /api/health — runs NO commands
 ├── package.json           # Vite and xterm.js dependencies, Node >= 20
 ├── vite.config.js         # build to dist/, dev/preview on 0.0.0.0
@@ -42,6 +45,7 @@ is more secure, more observable, and easier for the next engineer to verify.
 └── docs/
     ├── ARCHITECTURE.md            # the real system design (Phases 1–3)
     ├── ENGINEERING_GUIDELINES.md  # engineering operating system
+    ├── protocol/TSP-v1.md         # proposed TSP v1 wire contract
     └── adr/                       # architecture decision records
 ```
 
@@ -59,9 +63,11 @@ is more secure, more observable, and easier for the next engineer to verify.
 4. **Never delete, rename, or move the repository root or `.git`.**
 5. **Do not weaken security headers** (HSTS, frame-options, nosniff, permissions
    policy, CSP). Tightening them is welcome if the app still works.
-6. **Terminal output is untrusted data.** Render DOM output with `textContent` or
-   xterm.js. Before writing dynamic text to xterm, strip/encode control bytes; only
-   fixed application-owned ANSI styling may remain. Never interpolate terminal bytes into HTML.
+6. **Terminal output is untrusted data.** Never interpolate it into HTML; use
+   `textContent` or xterm.js. The current simulator must pass dynamic text through
+   `terminal-text.js` before writing it to xterm. A future real PTY stream must
+   preserve VT bytes for xterm parsing, while enforcing the active-sequence policy
+   in `docs/ARCHITECTURE.md` §6.1 (especially OSC links and clipboard access).
 7. **Runtime stays lean.** The app currently bundles xterm.js plus its Fit and
    optional WebGL addons locally; it loads no terminal code from a CDN. Adding
    another runtime dependency requires a written justification (what it costs,
