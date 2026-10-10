@@ -2,7 +2,7 @@
 
 TermBox is a focused, browser-native workspace inspired by the workflow of Termux: start in a terminal, run familiar commands, and switch into a visual GUI workspace when a command-line view is not the best tool.
 
-This repository is a dependency-free static prototype. It can be opened directly from `index.html`, served by any static server, or deployed to Vercel/GitHub Pages. The command runner is intentionally a safe browser simulator; it does not execute arbitrary commands on a server.
+This repository is a static web prototype built with Vite. The terminal view uses a locally bundled xterm.js renderer, but its command adapter is still a safe browser simulator: it does not execute commands or connect to a remote shell. Run the source through Vite (`npm run dev`) or build it for a static host; opening the source `index.html` directly via `file://` is not supported.
 
 ## Documentation map
 
@@ -24,12 +24,12 @@ the architecture document wins** — and a PR fixing the disagreement is welcome
 1. **Terminal first** — the first screen should feel like a real shell, with a readable prompt, session tabs, command history, shortcuts, and useful starter output.
 2. **GUI when it helps** — the GUI mode turns the same workspace into a visual launchpad for files, tools, packages, and system health. Switching modes should never feel like leaving the project.
 3. **Safe by default** — the front-end demo must not imply that arbitrary shell commands execute on an edge server. A future execution service should be isolated in a sandbox with authentication, limits, and an explicit permission model.
-4. **Portable deployment** — the initial build has no build-time dependencies or external assets. The same files can be deployed to Vercel, GitHub Pages, or copied to Google Drive for sharing and backup.
+4. **Portable deployment** — package assets are bundled locally with Vite; the app loads no remote CDN scripts. The generated static build can be deployed to Vercel or GitHub Pages, or archived for sharing and backup.
 
 ### MVP shipped in this prototype
 
 - Responsive TermBox shell with a mobile navigation bar.
-- Terminal mode with simulated `help`, `ls`, `pwd`, `neofetch`, `git status`, `npm run build`, `npm run dev`, `pkg`, `echo`, `date`, `history`, and version commands.
+- Terminal mode rendered with xterm.js and local Fit/WebGL addons; the current command adapter simulates `help`, `ls`, `pwd`, `neofetch`, `git status`, `npm run build`, `npm run dev`, `pkg`, `echo`, `date`, `history`, and version commands. This is not a real shell.
 - Command history with Up/Down, Tab autocomplete, `Ctrl/⌘ + K` command palette, and `Ctrl + L` clear.
 - GUI mode with a launchpad, recent files, workspace status, resource health, and active session card.
 - Files, Packages, and Activity views accessible from the sidebar or palette.
@@ -47,8 +47,15 @@ in **[docs/ARCHITECTURE.md §15](docs/ARCHITECTURE.md)**. Summary:
 
 #### Phase 1 — the real terminal
 
-- xterm.js shell replacing the simulator; Terminal Stream Protocol (TSP v1) with
-  reconnect/resume and flow control; Terminal Gateway.
+**Current checkpoint:** this branch now bundles xterm.js as the terminal renderer,
+with FitAddon and optional WebGL acceleration. Commands still go to the safe
+browser simulator; there is no PTY, TSP connection, or remote shell yet.
+
+Remaining Phase 1 work:
+
+- Replace the simulator command adapter with a real terminal connection using
+  Terminal Stream Protocol (TSP v1), reconnect/resume, flow control, and a
+  Terminal Gateway.
 - **Instant Plane**: in-browser Linux (v86/WASM) with a Kali-mini rootfs — free,
   offline-capable, boots to a prompt in the tab.
 - GitHub OAuth, session store, rate limits, idle timeouts, size/perf budgets in CI.
@@ -68,20 +75,17 @@ in **[docs/ARCHITECTURE.md §15](docs/ARCHITECTURE.md)**. Summary:
 
 ## Run locally
 
-No install step is required for the static prototype:
-
-```bash
-python3 -m http.server 4173 --bind 0.0.0.0
-```
-
-Open `http://localhost:4173` in a browser. With Node.js 20+, the Vite scripts are:
+Use Node.js 20+ and Vite to resolve and bundle the local xterm.js packages:
 
 ```bash
 npm ci
-npm run dev       # development server
+npm test          # terminal-output sanitizer tests
+npm run dev       # development server on 0.0.0.0
 npm run build     # production build into dist/
 npm run preview   # serve dist/ locally
 ```
+
+The generated `dist/` directory is static and can be deployed to a static host. The unbuilt source cannot be served with a plain static server because its bare package imports are resolved by Vite.
 
 ## Deployment: Vercel
 
@@ -148,8 +152,11 @@ Google Drive is useful for sharing a zipped snapshot or design handoff, but it i
 ├── AGENTS.md        # operating manual for AI agents and contributors
 ├── index.html       # semantic app shell and view markup
 ├── styles.css       # responsive dark UI system
-├── app.js           # safe terminal simulator and view interactions
-├── package.json     # Vite scripts; Node.js 20+
+├── app.js           # safe command simulator and view interactions
+├── terminal-view.js # lazily loaded xterm.js terminal renderer
+├── terminal-text.js # control-sequence-safe output text conversion
+├── tests/           # Node built-in tests
+├── package.json     # Vite/xterm.js dependencies; Node.js 20+
 ├── vite.config.js   # build output (dist/) and dev/preview servers
 └── vercel.json      # build, routing, security headers, caching
 ```

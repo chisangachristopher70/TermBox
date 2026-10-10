@@ -545,7 +545,7 @@ Rough economics (validate with benchmarks before pricing):
 
 | Layer | Choice | Alternatives rejected (why) |
 | --- | --- | --- |
-| Web app | TypeScript + Vite (current prototype language), xterm.js; UI framework optional at Phase 2 behind module boundaries | Heavy frameworks at Phase 0 (bundle budget); Electron (not the web) |
+| Web app | TypeScript + Vite as the target; the current prototype uses JavaScript + Vite and incrementally bundles xterm.js; UI framework optional at Phase 2 behind module boundaries | Heavy frameworks at Phase 0 (bundle budget); Electron (not the web) |
 | Terminal engine | xterm.js + WebGL (ADR-003) | Custom DOM emulator (perf), hterm (a11y/aging), Hyper-style custom (effort) |
 | Transport | TSP over WebSocket (ADR-002) | Raw SSH over WS (no resume/multiplexing), WebTransport (premature, fallback path later) |
 | Gateway | Go (tiny per-connection footprint, backpressure control) | Node (event-loop + memory at 10k conns); Rust (team velocity cost) — see ADR-006 |
@@ -596,7 +596,9 @@ Static prototype: simulated terminal (honestly labeled), GUI views, palette,
 **Exit gate passed:** product shape validated; CSP and deployment hardened.
 
 ### Phase 1 — the real terminal (≈ 6–8 weeks)
-- xterm.js shell replacing the simulator (same views, same look).
+- xterm.js shell replacing the simulator (same views, same look). **Current
+  checkpoint:** xterm.js is integrated as a local renderer, but commands still
+  use the safe browser simulator; no PTY or remote transport is connected.
 - TSP v1 + Terminal Gateway (Go) + session replay ring; `WasmDriver` Instant
   Plane (v86 + kali-mini rootfs) behind `POST /api/sessions`.
 - Auth (GitHub OIDC), session store (Postgres), rate limits, idle timeouts.
